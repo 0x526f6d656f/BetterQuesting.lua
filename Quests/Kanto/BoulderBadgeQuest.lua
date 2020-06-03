@@ -1,0 +1,165 @@
+-- Copyright © 2016 g0ld <g0ld@tuta.io>
+-- This work is free. You can redistribute it and/or modify it under the
+-- terms of the Do What The Fuck You Want To Public License, Version 2,
+-- as published by Sam Hocevar. See the COPYING file for more details.
+
+local sys    = require "Libs/syslib"
+local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
+local Quest  = require "Quests/Quest"
+local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
+
+local name        = 'Boulder Badge'
+local description = 'from route 2 to route 3'
+
+local checkedViridianMazePokeball = false
+
+local checkedForBestPokemon = false
+
+local BoulderBadgeQuest = Quest:new()
+function BoulderBadgeQuest:new()
+	return Quest.new(BoulderBadgeQuest, name, description, 14)
+end
+
+function BoulderBadgeQuest:isDoable()
+	if not hasItem("Cascade Badge") and self:hasMap()
+	then
+		return true
+	end
+	return false
+end
+
+function BoulderBadgeQuest:isDone()
+	return getMapName() == "Pokecenter Route 3"
+end
+
+-- in case of black out
+function BoulderBadgeQuest:PokecenterViridian()
+	return moveToCell(9,130)
+end
+
+function BoulderBadgeQuest:ViridianCity()
+	return moveToCell(39,0)
+end
+
+function BoulderBadgeQuest:Route2()
+	if game.inRectangle(0, 90, 24, 130) then
+		return moveToCell(16,96)
+	elseif game.inRectangle(0, 0, 28, 42) then
+		self:route2Up()
+	else
+		error("BoulderBadgeQuest:Route2(): This position should not be possible")
+	end
+end
+
+function BoulderBadgeQuest:Route2Stop()
+	return moveToCell(4,2)
+end
+
+function BoulderBadgeQuest:ViridianForest()
+	log(checkedViridianMazePokeball)
+	if not checkedViridianMazePokeball then
+		return moveToCell(19, 38)
+	else
+		return moveToCell(12,15)
+	end
+end
+
+function BoulderBadgeQuest:ViridianMaze()
+	if isNpcOnCell(186, 52) then
+		sys.debug("quest", "Going to get hidden Pokemon.")
+		return talkToNpcOnCell(186, 52)
+	else
+		checkedViridianMazePokeball = true
+		return moveToCell(16, 60)
+	end
+end
+
+function BoulderBadgeQuest:Route2Stop2()
+	return moveToCell(4,2)
+end
+
+function BoulderBadgeQuest:route2Up()
+	if self.registeredPokecenter ~= "Pokecenter Pewter" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(25,0)
+	elseif not self:needPokecenter() and not self:isTrainingOver() then
+		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
+		return moveToGrass()
+	else
+		sys.debug("quest", "Going to Pewter City.")
+		return moveToCell(25,0)
+	end
+end
+
+function BoulderBadgeQuest:PewterCity()
+	if isNpcOnCell(23, 22) then
+		sys.debug("quest", "Going to talk/fight Red blocking the way.")
+		return talkToNpcOnCell(23, 22)
+	elseif self:needPokemart() then
+		sys.debug("quest", "Going to buy Pokeballs.")
+		return moveToCell(37,26)
+	elseif hasItem("Boulder Badge") then
+		sys.debug("quest", "Going to Route 3")
+		return moveToCell(65,34)
+	elseif self.registeredPokecenter ~= "Pokecenter Pewter"
+		or not game.isTeamFullyHealed()
+	then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(24,35)
+	elseif self:isTrainingOver() then
+		sys.debug("quest", "Going to fight Brock.")
+		return moveToCell(23,21) --Pewter Gym
+	else
+		sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
+		return moveToCell(16,55)
+	end
+end
+
+function BoulderBadgeQuest:PewterGym()
+	if hasItem("Boulder Badge") then
+		return moveToCell(7,14)
+	else
+		return talkToNpcOnCell(7,5)
+	end
+end
+
+
+function BoulderBadgeQuest:Route3()
+	return moveToCell(79,21)
+end
+
+function BoulderBadgeQuest:PokecenterPewter()
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+							log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+							return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			return usePC()
+		end
+	else
+		self:pokecenter("Pewter City")
+	end
+end
+
+function BoulderBadgeQuest:PewterPokemart()
+	self:pokemart("Pewter City")
+end
+
+return BoulderBadgeQuest
