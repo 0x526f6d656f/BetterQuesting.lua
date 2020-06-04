@@ -522,14 +522,14 @@ function Quest:checkNPCInteractions()
 	}
 
 	if sys.tableHasValue(mapBlacklistForNPCInteractions, getMapName()) then
-		if isNPCInteractionsEnabled() then
+		if isNpcInteractionsEnabled() then
 			if disableNpcInteractions() then
 				sys.debug("NPC INTERACTIONS", "disabled.")
 				return true
 			end
 		end
 	else
-		if not isNPCInteractionsEnabled() then
+		if not isNpcInteractionsEnabled() then
 			if enableNpcInteractions() then
 				sys.debug("NPC INTERACTIONS", "enabled.")
 				return true

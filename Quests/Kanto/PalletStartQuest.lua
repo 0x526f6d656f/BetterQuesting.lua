@@ -12,7 +12,7 @@ local description = 'from PalletTown to Route 1'
 
 local dialogs = {
 	mom = Dialog:new({
-		"Remember that I love you", -- REMEMBER THAT, OKAY?!
+		"Remember that I love you",
 		"glad that you dropped by"
 	}),
 	oak = Dialog:new({
@@ -47,14 +47,15 @@ end
 
 function PalletStartQuest:PlayerBedroomPallet()
 	if getTeamSize() == 0 or hasItem("Pokeball") then
-		moveToCell(12,4)
+		sys.debug("quest", "Going to get Starter Pokemon.")
+		return moveToCell(12, 4)
 	else
-		if isNpcOnCell(7,3) then
-			talkToNpcOnCell(7,3)
-		elseif isNpcOnCell(6,3) then
-			talkToNpcOnCell(6,3)
-		else
-			error("No Pokeball in 'Player Bedroom Pallet' nor in bag")
+		if isNpcOnCell(7, 3) then
+			sys.debug("quest", "Going to collect item.")
+			return talkToNpcOnCell(7, 3)
+		elseif isNpcOnCell(6, 3) then
+			sys.debug("quest", "Going to collect item.")
+			return talkToNpcOnCell(6, 3)
 		end
 	end
 end
@@ -62,28 +63,38 @@ end
 
 function PalletStartQuest:PlayerHousePallet()
 	if getTeamSize() == 0 or hasItem("Pokeball") then
-		return moveToCell(4,10)
+		sys.debug("quest", "Going to get Starter Pokemon.")
+		return moveToCell(4, 10)
 	else
 		if self.dialogs.mom.state == false then
-			return talkToNpcOnCell(7,6)
+			sys.debug("quest", "Going to talk to Mother.")
+			return talkToNpcOnCell(7, 6)
 		else
-			return moveToCell(12,3)
+			sys.debug("quest", "Going to collect items.")
+			return moveToCell(12, 3)
 		end
 	end
 end
 
 function PalletStartQuest:PalletTown()
 	if getTeamSize() == 0 then
+		sys.debug("quest", "Going to get Starter Pokemon.")
 		return moveToCell(22,21)
+
 	elseif not hasItem("Pokeball") then
-		return moveToCell(6,12)
+		sys.debug("quest", "Going to collect items.")
+		return moveToCell(6, 12)
+
 	else
-		if isNpcOnCell(11,12) then
-			return talkToNpcOnCell(11,12)
-		elseif isNpcVisible("Jackson") then
-			return talkToNpc("Jackson")
+		if isNpcOnCell(11, 12) then
+			sys.debug("quest", "Going to talk to Eevee.")
+			return talkToNpcOnCell(11, 12)
+		elseif isNpcOnCell(14, 10) then
+			sys.debug("quest", "Going to talk to Jackson.")
+			return talkToNpcOnCell(14, 10)
 		else
-			return moveToCell(14,0)
+			sys.debug("quest", "Going to Route 1.")
+			return moveToCell(14, 0)
 		end
 	end
 end
@@ -91,26 +102,31 @@ end
 function PalletStartQuest:OaksLab()
 	if getTeamSize() == 0 then
 		if self.dialogs.oak.state == false then
-			return talkToNpcOnCell(7,4) -- Oak
+			sys.debug("quest", "Going to talk to Prof. Oak.")
+			return talkToNpcOnCell(7, 4) -- Oak
 		else
 			if KANTO_STARTER_ID == 1 then
-				return talkToNpcOnCell(9,6)  -- bulbasaur
+				sys.debug("quest", "Going to get Bulbasaur.")
+				return talkToNpcOnCell(9, 6)  -- Bulbasaur
 			elseif KANTO_STARTER_ID == 2 then
-				return talkToNpcOnCell(10,6) -- charmander
+				sys.debug("quest", "Going to get Charmander.")
+				return talkToNpcOnCell(10, 6) -- Charmander
 			elseif KANTO_STARTER_ID == 3 then
-				return talkToNpcOnCell(11,6) -- squirtle
+				sys.debug("quest", "Going to get Squirtle.")
+				return talkToNpcOnCell(11, 6) -- Squirtle
 			elseif KANTO_STARTER_ID == 4 then
+				sys.debug("quest", "Going to get Pikachu.")
 				if not self.dialogs.bulbasaur.state then
 					pushDialogAnswer(2)
-					return talkToNpcOnCell(9,6)  -- bulbasaur
+					return talkToNpcOnCell(9, 6)  -- bulbasaur
 				elseif not self.dialogs.charmander.state then
 					pushDialogAnswer(2)
-					return talkToNpcOnCell(10,6) -- charmander
+					return talkToNpcOnCell(10, 6) -- charmander
 				elseif not self.dialogs.squirtle.state then
 					pushDialogAnswer(2)
-					return talkToNpcOnCell(11,6) -- squirtle
+					return talkToNpcOnCell(11, 6) -- squirtle
 				else
-					return talkToNpcOnCell(9,2) -- pikachu
+					return talkToNpcOnCell(9, 2) -- pikachu
 				end
 			else
 				return fatal("undefined KANTO_STARTER_ID")
@@ -118,9 +134,11 @@ function PalletStartQuest:OaksLab()
 		end
 	else
 		if not hasItem("Pokedex") then
-			return talkToNpcOnCell(7,4) -- Oak
+			sys.debug("quest", "Going to talk to Prof. Oak to get the PokeDex.")
+			return talkToNpcOnCell(7, 4) -- Oak
 		else
-			return moveToCell(7,12)
+			sys.debug("quest", "Going back outside.")
+			return moveToCell(7, 12)
 		end
 	end
 end

@@ -14,13 +14,12 @@ local luaPokemonData = require "Data/luaPokemonData"
 local name        = 'Boulder Badge'
 local description = 'from route 2 to route 3'
 
-local checkedViridianMazePokeball = false
-
-local checkedForBestPokemon = false
-
 local BoulderBadgeQuest = Quest:new()
 function BoulderBadgeQuest:new()
-	return Quest.new(BoulderBadgeQuest, name, description, 14)
+	local o = Quest.new(BoulderBadgeQuest, name, description, 14)
+	o.checkedForBestPokemon = false
+	o.checkedViridianMazePokeball = false
+	return o
 end
 
 function BoulderBadgeQuest:isDoable()
@@ -35,50 +34,53 @@ function BoulderBadgeQuest:isDone()
 	return getMapName() == "Pokecenter Route 3"
 end
 
--- in case of black out
-function BoulderBadgeQuest:PokecenterViridian()
-	return moveToCell(9,130)
-end
-
-function BoulderBadgeQuest:ViridianCity()
-	return moveToCell(39,0)
-end
-
 function BoulderBadgeQuest:Route2()
-	if game.inRectangle(0, 90, 24, 130) then
-		return moveToCell(16,96)
+	if game.inRectangle(0, 94, 45, 130) then
+		sys.debug("quest", "Going to Viridian Forest.")
+		return moveToCell(16, 96)
 	elseif game.inRectangle(0, 0, 28, 42) then
 		self:route2Up()
-	else
-		error("BoulderBadgeQuest:Route2(): This position should not be possible")
 	end
 end
 
 function BoulderBadgeQuest:Route2Stop()
-	return moveToCell(4,2)
+	sys.debug("quest", "Going to Viridian Forest.")
+	return moveToCell(4, 2)
 end
 
 function BoulderBadgeQuest:ViridianForest()
-	log(checkedViridianMazePokeball)
-	if not checkedViridianMazePokeball then
+	if not self.checkedViridianMazePokeball then
+		sys.debug("quest", "Going to get secret Pokemon from Viridian Maze.")
 		return moveToCell(19, 38)
 	else
+	sys.debug("quest", "Going to Pewter City.")
 		return moveToCell(12,15)
 	end
 end
 
 function BoulderBadgeQuest:ViridianMaze()
 	if isNpcOnCell(186, 52) then
-		sys.debug("quest", "Going to get hidden Pokemon.")
+		sys.debug("quest", "Going to get secret Pokemon.")
 		return talkToNpcOnCell(186, 52)
 	else
-		checkedViridianMazePokeball = true
+		sys.debug("quest", "Going to Pewter City.")
+		self.checkedViridianMazePokeball = true
 		return moveToCell(16, 60)
 	end
 end
 
+function BoulderBadgeQuest:PokecenterViridian()
+	self:pokecenter()
+end
+
+function BoulderBadgeQuest:ViridianCity()
+	sys.debug("quest", "Going to Viridian Maze.")
+	return moveToCell(39, 0)
+end
+
 function BoulderBadgeQuest:Route2Stop2()
-	return moveToCell(4,2)
+	sys.debug("quest", "Going to Pewter City.")
+	return moveToCell(4, 2)
 end
 
 function BoulderBadgeQuest:route2Up()
@@ -100,26 +102,27 @@ function BoulderBadgeQuest:PewterCity()
 		return talkToNpcOnCell(23, 22)
 	elseif self:needPokemart() then
 		sys.debug("quest", "Going to buy Pokeballs.")
-		return moveToCell(37,26)
+		return moveToCell(37, 26)
 	elseif hasItem("Boulder Badge") then
 		sys.debug("quest", "Going to Route 3")
-		return moveToCell(65,34)
+		return moveToCell(65, 34)
 	elseif self.registeredPokecenter ~= "Pokecenter Pewter"
 		or not game.isTeamFullyHealed()
 	then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(24,35)
+		return moveToCell(24, 35)
 	elseif self:isTrainingOver() then
 		sys.debug("quest", "Going to fight Brock.")
-		return moveToCell(23,21) --Pewter Gym
+		return moveToCell(23, 21) --Pewter Gym
 	else
 		sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
-		return moveToCell(16,55)
+		return moveToCell(16, 55)
 	end
 end
 
 function BoulderBadgeQuest:PewterGym()
 	if hasItem("Boulder Badge") then
+		sys.debug("quest", "Going to Mt. Moon.")
 		return moveToCell(7,14)
 	else
 		return talkToNpcOnCell(7,5)
@@ -128,7 +131,8 @@ end
 
 
 function BoulderBadgeQuest:Route3()
-	return moveToCell(79,21)
+	sys.debug("quest", "Going to Mt. Moon.")
+	return moveToCell(79, 21)
 end
 
 function BoulderBadgeQuest:PokecenterPewter()
@@ -151,6 +155,7 @@ function BoulderBadgeQuest:PokecenterPewter()
 				end
 			end
 		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
 			return usePC()
 		end
 	else

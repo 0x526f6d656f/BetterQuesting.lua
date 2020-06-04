@@ -22,10 +22,12 @@ function StartQuest:isDoable()
 end
 
 function StartQuest:Start()
-	if isNpcOnCell(21,38) then
-		talkToNpcOnCell(21,38)
+	if isNpcOnCell(21, 38) then
+		sys.debug("quest", "Going to talk to Prof. Oak.")
+		return talkToNpcOnCell(21, 38)
 	else
-		moveToCell(26,87)
+		sys.debug("quest", "Going to Pallet Town.")
+		return moveToCell(26, 87)
 	end
 end
 
