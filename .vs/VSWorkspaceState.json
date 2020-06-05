@@ -3,10 +3,9 @@
     "",
     "\\Libs",
     "\\Quests",
-    "\\Quests\\Hoenn",
     "\\Quests\\Johto",
     "\\Quests\\Kanto"
   ],
-  "SelectedNode": "\\Quests\\Hoenn\\e4Hoenn.lua",
+  "SelectedNode": "\\Quests\\Kanto\\MoonFossilQuest.lua",
   "PreviewInSolutionExplorer": false
 }

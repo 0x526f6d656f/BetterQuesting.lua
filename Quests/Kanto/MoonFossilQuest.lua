@@ -24,8 +24,7 @@ function MoonFossilQuest:new()
 end
 
 function MoonFossilQuest:isDoable()
-	if not hasItem("Cascade Badge") and self:hasMap()
-	then
+	if not hasItem("Cascade Badge") and self:hasMap() then
 		return true
 	end
 	return false
@@ -35,23 +34,27 @@ function MoonFossilQuest:isDone()
 	return getMapName() == "Cerulean City"
 end
 
+function MoonFossilQuest:PokecenterRoute3()
+	return self:pokecenter("Route 3")
+end
+
 function MoonFossilQuest:Route3()
 	if self:needPokecenter()
 		or not game.isTeamFullyHealed()
 		or self.registeredPokecenter ~= "Pokecenter Route 3"
 	then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(79,21)
+		return moveToCell(79, 21)
 	else
 		sys.debug("quest", "Going to Mt. Moon.")
-		return moveToCell(84,16)
+		return moveToCell(84, 16)
 	end
 end
 
 function MoonFossilQuest:MtMoon1F()
 	if self:needPokecenter() then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(38,63)
+		return moveToCell(38, 63)
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to train Pokemon until they are all level " .. self.level .. ".")
 		return moveToRectangle(37, 60, 40, 62)
@@ -72,8 +75,6 @@ function MoonFossilQuest:MtMoonB1F()
 	elseif game.inRectangle(32, 19, 42, 22) then
 		sys.debug("quest", "Going to Mt. Moon Exit.")
 		return moveToCell(41, 20) -- Mt. Moon Exit
-	else
-		error("MoonFossilQuest:MtMoonB1F(): [" .. getPlayerX() .. "," .. getPlayerY() .. "] is not a known position")
 	end
 end
 
@@ -82,11 +83,11 @@ function MoonFossilQuest:MtMoonB2F()
 		if isNpcOnCell(25, 29) and isNpcOnCell(26, 29) then -- fossile on the way
 			if dialogs.fossileGuyBeaten.state then
 				if KANTO_FOSSIL_ID == 1 then
+					sys.debug("quest", "Going to get Helix fossil.")
 					return talkToNpcOnCell(25, 29)
 				elseif KANTO_FOSSIL_ID == 2 then
+					sys.debug("quest", "Going to get Dome fossil.")
 					return talkToNpcOnCell(26, 29)
-				else
-					fatal("undefined KANTO_FOSSIL_ID")
 				end
 			else
 				sys.debug("quest", "Going to fight fossil NPC.")
@@ -99,8 +100,6 @@ function MoonFossilQuest:MtMoonB2F()
 			sys.debug("quest", "Going to Mt. Moon B1F - Exit.")
 			return moveToCell(17, 27) -- Mt. Moon B1F
 		end
-	else
-		error("MoonFossilQuest:MtMoonB2F(): [" .. getPlayerX() .. "," .. getPlayerY() .. "] is not a known position")
 	end
 end
 
@@ -112,10 +111,6 @@ end
 function MoonFossilQuest:Route4()
 	sys.debug("quest", "Going to Cerulean City.")
 	return moveToCell(96, 21) -- Cerulean City (avoid water link)
-end
-
-function MoonFossilQuest:PokecenterRoute3()
-	return self:pokecenter("Route 3")
 end
 
 return MoonFossilQuest
