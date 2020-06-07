@@ -7,7 +7,6 @@ local Quest  = require "Quests/Quest"
 
 local name        = 'Lance Vermilion Quest'
 local description = 'Lance vision'
-local level       = 21
 
 local LanceVermilionQuest = Quest:new()
 
@@ -24,6 +23,7 @@ function LanceVermilionQuest:isDone()
 end
 
 function LanceVermilionQuest:VermilionCity2()
+	sys.debug("quest", "Going to talk to NPC.")
 	return talkToNpcOnCell(44, 30)
 end
 

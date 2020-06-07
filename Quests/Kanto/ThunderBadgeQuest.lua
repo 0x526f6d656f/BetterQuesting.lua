@@ -10,7 +10,6 @@ local name        = 'Thunder Badge Quest'
 local description = 'From Route 5 to Route 6'
 local level       = 31
 
-local checkedForBestPokemon = false
 
 local dialogs = {
 	psychicWadePart2 = Dialog:new({
@@ -33,6 +32,7 @@ local ThunderBadgeQuest = Quest:new()
 
 function ThunderBadgeQuest:new()
 	o = Quest.new(ThunderBadgeQuest, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
 	o.puzzle = {}
 	o.firstSwitchFound     = false
 	o.firstSwitchActivated = false
@@ -102,7 +102,12 @@ function ThunderBadgeQuest:Route6()
 
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to train Pokemon until they are all level " .. self.level .. ".")
-		return moveToCell(0, 52)
+
+		if picked_route == 1 then
+			return moveToCell(0, 52)
+		elseif picked_route == 2 then
+			return moveToRectangle()
+		end
 
 	else
  		return moveToCell(23,61)
@@ -145,6 +150,7 @@ function ThunderBadgeQuest:PokecenterVermilion()
 					end
 				end
 			else
+				sys.debug("quest", "Going to check for better Pokemon in boxes.")
 				return usePC()
 			end
 		else
@@ -162,7 +168,7 @@ function ThunderBadgeQuest:VermilionPokemart()
 end
 
 function ThunderBadgeQuest:CeruleanCity()
-	sys.debug("Going back to Route 5 after blackout.")
+	sys.debug("quest", "Going back to Route 5 after blackout.")
 	return moveToCell(16, 50)
 end
 
@@ -195,6 +201,8 @@ function ThunderBadgeQuest:VermilionCity()
 		return talkToNpcOnCell(38, 63) -- Surge
 
 	elseif not self:isTrainingOver() then
+		picked_route = math.random(1,2) -- we pick it here, so the bot only randomizes it once
+
 		sys.debug("quest", "Going to train Pokemon until they are all level " .. self.level .. ".")
 		return moveToCell(43, 0)-- Go to Route 6 and level up Pokemon.
 
