@@ -52,8 +52,11 @@ function BoulderBadgeQuest:ViridianForest()
 	if not self.checkedViridianMazePokeball then
 		sys.debug("quest", "Going to get secret Pokemon from Viridian Maze.")
 		return moveToCell(19, 38)
+	elseif picked_route == 2 then
+		sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
+		return moveToRectangle(10, 17, 15, 29)
 	else
-	sys.debug("quest", "Going to Pewter City.")
+		sys.debug("quest", "Going to Pewter City.")
 		return moveToCell(12,15)
 	end
 end
@@ -79,8 +82,12 @@ function BoulderBadgeQuest:ViridianCity()
 end
 
 function BoulderBadgeQuest:Route2Stop2()
-	sys.debug("quest", "Going to Pewter City.")
-	return moveToCell(4, 2)
+	if picked_route == 2 then
+		return moveToCell(4, 12)
+	else
+		sys.debug("quest", "Going to Pewter City.")
+		return moveToCell(4, 2)
+	end
 end
 
 function BoulderBadgeQuest:route2Up()
@@ -89,7 +96,11 @@ function BoulderBadgeQuest:route2Up()
 		return moveToCell(25,0)
 	elseif not self:needPokecenter() and not self:isTrainingOver() then
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		return moveToGrass()
+		if picked_route == 1 then
+			return moveToGrass()
+		elseif picked_route == 2 then
+			return moveToCell(10, 42)
+		end
 	else
 		sys.debug("quest", "Going to Pewter City.")
 		return moveToCell(25,0)
@@ -115,6 +126,7 @@ function BoulderBadgeQuest:PewterCity()
 		sys.debug("quest", "Going to fight Brock.")
 		return moveToCell(23, 21) --Pewter Gym
 	else
+		picked_route = math.random(1, 2)
 		sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
 		return moveToCell(16, 55)
 	end
@@ -143,14 +155,9 @@ function BoulderBadgeQuest:PokecenterPewter()
 					log("Current Box: " .. getCurrentPCBoxId())
 					log("Box Size: " .. getCurrentPCBoxSize())
 					for teamPokemonIndex = 1, getTeamSize() do
-						if sys.tableHasValue(self.cutTargets, getPokemonName(teamPokemonIndex)) or sys.tableHasValue(self.surfTargets, getPokemonName(teamPokemonIndex)) then
-							log(string.format("Pokemon \"%s\" is either a Surf or Cut target, ignoring.", getPokemonName(teamPokemonIndex)))
-							return true
-						else
-							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
-								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
-								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
-							end
+						if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+							log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+							return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
 						end
 					end
 					return openPCBox(getCurrentPCBoxId() + 1)
