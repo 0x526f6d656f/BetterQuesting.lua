@@ -5,7 +5,6 @@ local Dialog = require "Quests/Dialog"
 
 local name		  = 'Rainbow Badge'
 local description = 'Beat Erika + Get Lemonade for future quest'
-local level = 42
 
 local dialogs = {
 	martElevatorFloor1 = Dialog:new({ 
@@ -24,7 +23,11 @@ function RainbowBadgeQuest:new()
 
 	--stay on map until ditto catched, if a bike is wanted from user
 	o.pokemon = "Ditto"
-	o.forceCaught = not BUY_BIKE
+	if BUY_BIKE then
+		o.forceCaught = false
+	else
+		o.forceCaught = true
+	end
 	return o
 end
 
@@ -44,15 +47,18 @@ function RainbowBadgeQuest:isDone()
 end
 
 function RainbowBadgeQuest:CeladonCity()
-	if isNpcOnCell(21,51) and getPlayerX() == 21 and getPlayerY() == 50 and hasItem("Rainbow Badge") then --NPC: Trainer OP
+	if isNpcOnCell(21, 51) and getPlayerX() == 21 and getPlayerY() == 50 and hasItem("Rainbow Badge") then --NPC: Trainer OP
 		sys.debug("quest", "Going to fight Red - WILL LOSE")
-		return talkToNpcOnCell(21,51)
+		return talkToNpcOnCell(21, 51)
+
 	elseif self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Celadon" then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(52,19)
+		return moveToCell(52, 19)
+
 	elseif not self:isTrainingOver() and not hasItem("Rainbow Badge") then
 		sys.debug("quest", "Going to level Pokemon until level " .. self.level .. ".")
-		return moveToCell(71,23)
+		return moveToCell(71, 23)
+
 	elseif not game.hasPokemonWithMove("Cut") then
 		if self.pokemonId <= getTeamSize() then					
 			useItemOnPokemon("HM01 - Cut", self.pokemonId)
@@ -61,29 +67,37 @@ function RainbowBadgeQuest:CeladonCity()
 		else
 			fatal("No pokemon in this team can learn - Cut")
 		end
+
 	elseif not hasItem("Rainbow Badge") then
 		if isNpcOnCell(46, 49) then
 			sys.debug("quest", "Going to talk to NPC in front of Gym.")
 			return talkToNpcOnCell(46, 49)
+
 		elseif isNpcOnCell(58, 51) then
 			sys.debug("quest", "Going to talk to NPC in front of Gym.")
 			return talkToNpcOnCell(58, 51)
+
 		elseif isNpcOnCell(21, 51) then
 			sys.debug("quest", "Going to talk to NPC in front of Gym.")
 			return talkToNpcOnCell(21, 51)
+
 		else
 			sys.debug("quest", "Going to 4th Gym.")
-			return moveToCell(21,50)
+			return moveToCell(21, 50)
+
 		end
-	elseif isNpcOnCell(14,42) then --NPC: Remove the Guards
+	elseif isNpcOnCell(14, 42) then --NPC: Remove the Guards
 		sys.debug("quest", "Going to remove the guard NPCs.")
-		return talkToNpcOnCell(14,42)
+		return talkToNpcOnCell(14, 42)
+
 	elseif not hasItem("Lemonade") then -- Buy Lemonade for Future Quest (Saffron Guard)
 		sys.debug("quest", "Going to buy Lemonade for future quest.")
-		return moveToCell(24,20)
+		return moveToCell(24, 20)
+
 	else
 		sys.debug("quest", "Going to Lavender Town.")
-		return moveToCell(71,23)
+		return moveToCell(71, 23)
+
 	end
 end
 
@@ -93,35 +107,38 @@ end
 
 function RainbowBadgeQuest:Route7()
 	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Celadon" then
-		return moveToCell(0,23)
+		return moveToCell(0, 23)
 	elseif hasItem("Rainbow Badge") and hasItem("Lemonade") then
-		return moveToCell(10,31)
+		return moveToCell(10, 31)
 	elseif not self:isTrainingOver() and not hasItem("Rainbow Badge") then
-		if not game.inRectangle(12,8,21,21) then
-			return moveToCell(17,17)
+		if not game.inRectangle(12, 8, 21, 21) then
+			return moveToCell(17, 17)
 		else
 			return moveToGrass()
 		end
 	else
-		return moveToCell(0,23)
+		return moveToCell(0, 23)
 	end
 end
 
 function RainbowBadgeQuest:CeladonGym()
 	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Celadon" or not self:isTrainingOver() then
-		return moveToCell(8,30)
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(8, 30)
 	elseif not hasItem("Rainbow Badge") then
-		talkToNpcOnCell(8,4) -- Erika
+		sys.debug("quest", "Going to fight Erika.")
+		talkToNpcOnCell(8, 4) -- Erika
 	else
-		return moveToCell(8,30)
+		sys.debug("quest", "Going to fight Red.")
+		return moveToCell(8, 30)
 	end
 end
 
 function RainbowBadgeQuest:CeladonMart1()
 	if not hasItem("Lemonade") then
-		return moveToCell(9,2)
+		return moveToCell(9, 2)
 	else
-		return moveToCell(8,15)
+		return moveToCell(8, 15)
 	end
 end
 
@@ -129,27 +146,27 @@ function RainbowBadgeQuest:CeladonMartElevator()
 	if not hasItem("Lemonade") then
 		if not dialogs.martElevatorFloor5.state then
 			pushDialogAnswer(5)
-			return talkToNpcOnCell(1,1)
+			return talkToNpcOnCell(1, 1)
 		else
 			dialogs.martElevatorFloor5.state = false
-			return moveToCell(2,5)
+			return moveToCell(2, 5)
 		end
 	else
 		if not dialogs.martElevatorFloor1.state then
 			pushDialogAnswer(1)
-			return talkToNpcOnCell(1,1)
+			return talkToNpcOnCell(1, 1)
 		else
 			dialogs.martElevatorFloor1.state = false
-			return moveToCell(2,5)
+			return moveToCell(2, 5)
 		end
 	end
 end
 
 function RainbowBadgeQuest:CeladonMart5()
 	if not hasItem("Lemonade") then
-		return moveToCell(16,4)
+		return moveToCell(16, 4)
 	else
-		return moveToCell(9,2)
+		return moveToCell(9, 2)
 	end
 end
 
@@ -161,28 +178,33 @@ function RainbowBadgeQuest:CeladonMart6()
 			if getMoney() > 1000 then
 				return buyItem("Lemonade", 5)
 			else
-				return buyItem("Lemonade",(getMoney()/200))
+				return buyItem("Lemonade", (getMoney()/200))
 			end
 		end
 	else
-		return moveToCell(15,8)
+		return moveToCell(15, 8)
 	end
 end
 
 function RainbowBadgeQuest:UndergroundHouse3()
-	return moveToCell(9,3)
+	return moveToCell(9, 3)
 end
 
 function RainbowBadgeQuest:Underground1()
-	return moveToCell(69,5)
+	return moveToCell(69, 5)
 end
 
 function RainbowBadgeQuest:UndergroundHouse4()
-	return moveToCell(4,10)
+	return moveToCell(4, 10)
 end
 
 function RainbowBadgeQuest:Route8()
-	return moveToCell(72,10)
+	if not self.forceCaught then
+		sys.debug("quest", "Going to catch Ditto for Bike later.")
+		return moveToGrass()
+	else
+		return moveToCell(72, 10)
+	end
 end
 
 return RainbowBadgeQuest

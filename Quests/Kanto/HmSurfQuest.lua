@@ -28,46 +28,46 @@ end
 function HmSurfQuest:SafariEntrance()
 	if not hasItem("HM03 - Surf") then
 		sys.debug("quest", "Going to get HM03 - Surf.")
-		return moveToCell(55,12)
+		return moveToCell(55, 12)
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return talkToNpcOnCell(27,25)
+		return talkToNpcOnCell(27, 25)
 	end
 end
 
 function HmSurfQuest:SafariArea1()
 	if not hasItem("HM03 - Surf") then
 		sys.debug("quest", "Going to get HM03 - Surf.")
-		return moveToCell(0,17)
+		return moveToCell(0, 17)
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(0,34)
+		return moveToCell(0, 34)
 	end
 end
 
 function HmSurfQuest:SafariArea2()
 	if not hasItem("HM03 - Surf") then
 		sys.debug("quest", "Going to get HM03 - Surf.")
-		return moveToCell(15,44)
+		return moveToCell(15, 44)
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(43,36)
+		return moveToCell(43, 36)
 	end
 end
 
 function HmSurfQuest:SafariArea3()
 	if not hasItem("HM03 - Surf") then
 		sys.debug("quest", "Going to get HM03 - Surf.")
-		return moveToCell(15,17)
+		return moveToCell(15, 17)
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(35,0)
+		return moveToCell(35, 0)
 	end
 end
 
 function HmSurfQuest:SafariHouse4()
 	sys.debug("quest", "Going back to Fuchsia City.")
-	return moveToCell(10,10)
+	return moveToCell(10, 10)
 end
 
 return HmSurfQuest

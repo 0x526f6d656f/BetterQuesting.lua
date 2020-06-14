@@ -6,7 +6,6 @@
 
 
 local sys    = require "Libs/syslib"
-local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
 
@@ -41,7 +40,7 @@ function SilphCoQuest:isDone()
 end
 
 function SilphCoQuest:SilphCo1F()
-	if isNpcOnCell(19,7) or dialogs.silphCoDone.state then
+	if isNpcOnCell(19, 7) or dialogs.silphCoDone.state then
 		sys.debug("quest", "Going to Saffron City.")
 		return moveToCell(10, 28)
 	else
@@ -63,32 +62,36 @@ end
 function SilphCoQuest:SilphCo3F()
 	if not dialogs.silphCoDone.state then
 		sys.debug("quest", "Going to Silph Co 7F.")
-		return moveToCell(16, 18) --Silph Co 7F
+		return moveToCell(16, 18) -- Teleporter: Silph Co 7F
 	else
 		sys.debug("quest", "Going to Silph Co 2F.")
-		return moveToCell(29, 5) --Silph Co 2F
+		return moveToCell(29, 5)
 	end
 end
 
 function SilphCoQuest:SilphCo7F()
 	if not dialogs.silphCoDone.state then
 		sys.debug("quest", "Going to Silph Co 11F.")
-		return moveToCell(6,11) --Silph Co 11F
+		return moveToCell(6, 11) -- Teleporter: Silph Co 11F
 	else
 		sys.debug("quest", "Going to Silph Co 3F.")
-		return moveToCell(6,6) --Silph Co 3F
+		return moveToCell(6, 6) -- Teleporter: Silph Co 3F
 	end
 end
 
 function SilphCoQuest:SilphCo11F()
-	if isNpcOnCell(3,13) then
-		return talkToNpcOnCell(3,13)
-	elseif isNpcOnCell(6,15) then
-		return talkToNpcOnCell(6,15)
+	if isNpcOnCell(3, 13) then
+		sys.debug("quest", "Going to fight Green.")
+		return talkToNpcOnCell(3, 13)
+	elseif isNpcOnCell(6, 15) then
+		sys.debug("quest", "Going to fight Giovanni.")
+		return talkToNpcOnCell(6, 15)
 	elseif not dialogs.silphCoDone.state then
-		return talkToNpcOnCell(9,11)
+		sys.debug("quest", "Going to take Rare Candies.")
+		return talkToNpcOnCell(9, 11)
 	else
-		return moveToCell(3,7) --Silph Co 7F
+		sys.debug("quest", "Going to Silph Co 7F.")
+		return moveToCell(3, 7) --Silph Co 7F
 	end
 end
 

@@ -5,7 +5,7 @@ local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
 
-local name        = 'Quest: HM05 - Flash '
+local name        = 'Quest: HM05 - Flash'
 local description = 'Route 11 to Route 9'
 
 local HmFlashQuest = Quest:new()
@@ -29,27 +29,6 @@ function HmFlashQuest:isDone()
 	end
 end
 
-function HmFlashQuest:Route11()
-	if isNpcOnCell(10, 13) then -- NPC Block Diglet's Entrance
-		sys.debug("quest", "Going to talk to NPC in front of Diglet Cave.")
-		return talkToNpcOnCell(10, 13) 
-	elseif not hasItem("HM05 - Flash") then
-		if getPokedexOwned() < 10 then
-			error("To take [HM05 - Flash] need 10 pokemons, you still have to catch ".. (10 - getPokedexOwned()) .." pokemons")
-		else	
-			sys.debug("quest", "Going to get HM05 - Flash.")
-			return moveToCell(10,12)
-		end
-	else
-		sys.debug("quest", "?????")
-		return moveToCell(0,13)
-	end
-end
-
-function HmFlashQuest:PokecenterVermilion() -- BlackOut FIX
-	self:pokecenter("Vermilion City")
-end
-
 function HmFlashQuest:VermilionCity()
 	if not hasItem("HM05 - Flash") then
 		sys.debug("quest", "Going to get HM05 - Flash.")
@@ -58,6 +37,27 @@ function HmFlashQuest:VermilionCity()
 		sys.debug("quest", "Going to Route 9.")
 		return moveToCell(42,0)
 	end
+end
+
+function HmFlashQuest:Route11()
+	if isNpcOnCell(10, 13) then -- NPC Block Diglet's Entrance
+		sys.debug("quest", "Going to talk to NPC in front of Diglet Cave.")
+		return talkToNpcOnCell(10, 13) 
+	elseif not hasItem("HM05 - Flash") then
+		if getPokedexOwned() < 10 then
+			error("To get [HM05 - Flash] you need 10 Pokemon registered in your Pokedex. You only have " .. (getPokedexOwned()) .. " registered.")
+		else	
+			sys.debug("quest", "Going to get HM05 - Flash.")
+			return moveToCell(10, 12)
+		end
+	else
+		sys.debug("quest", "Going to Route 9.")
+		return moveToCell(0, 13)
+	end
+end
+
+function HmFlashQuest:PokecenterVermilion() -- BlackOut FIX
+	self:pokecenter("Vermilion City")
 end
 
 function HmFlashQuest:Route6()
@@ -172,7 +172,3 @@ function HmFlashQuest:Route2Stop3()
 end
 
 return HmFlashQuest
-
-
-
-

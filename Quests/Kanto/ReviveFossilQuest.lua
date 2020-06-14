@@ -6,9 +6,7 @@
 
 
 local sys    = require "Libs/syslib"
-local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'Revive Fossils'
 local description = 'Dome Fossil, Helix Fossil, Old Amber, Jaw Fossil, Sail Fossil'
@@ -32,9 +30,9 @@ function ReviveFossilQuest:CinnabarLab()
 		sys.debug("quest", "Going back to Cinnabar Island.")
 		return moveToCell(6, 15)
 	else
-		if isNpcOnCell(34,10) then
+		if isNpcOnCell(34, 10) then
 			sys.debug("quest", "Going to talk to NPC in front of Cinnabar Lab Room 3.")
-			return talkToNpcOnCell(34,10)
+			return talkToNpcOnCell(34, 10)
 		else
 			sys.debug("quest", "Going to Cinnabar Lab Room 3.")
 			return moveToCell(34, 9)
@@ -43,36 +41,36 @@ function ReviveFossilQuest:CinnabarLab()
 end
 
 function ReviveFossilQuest:CinnabarLabRoom3()
-	if hasItem("Dome Fossil") or hasItem("Helix Fossil") or hasItem("Old Amber") then
+	if hasItem("Dome Fossil") or hasItem("Helix Fossil") or hasItem("Old Amber") or hasItem("Jaw Fossil") or hasItem("Sail Fossil") then
 		if hasItem("Dome Fossil") then
 			sys.debug("quest", "Going to revive Dome Fossil.")
 			pushDialogAnswer(1) --Choose Fossil
 			pushDialogAnswer(1) --Confirm
-			return talkToNpcOnCell(12,5)
+			return talkToNpcOnCell(12, 5)
 
 		elseif hasItem("Helix Fossil") then
 			sys.debug("quest", "Going to revive Helix Fossil.")
 			pushDialogAnswer(2) --Choose Fossil
 			pushDialogAnswer(1) --Confirm
-			return talkToNpcOnCell(12,5)
+			return talkToNpcOnCell(12, 5)
 
 		elseif hasItem("Old Amber") then
 			sys.debug("quest", "Going to revive Old Amber.")
 			pushDialogAnswer(3) --Choose Fossil
 			pushDialogAnswer(1) --Confirm
-			return talkToNpcOnCell(12,5)
+			return talkToNpcOnCell(12, 5)
 
 		elseif hasItem("Jaw Fossil") then
 			sys.debug("quest", "Going to revive Jaw Fossil.")
 			pushDialogAnswer(4) --Choose Fossil
 			pushDialogAnswer(1) --Confirm
-			return talkToNpcOnCell(12,5)
+			return talkToNpcOnCell(12, 5)
 
 		elseif hasItem("Sail Fossil") then
 			sys.debug("quest", "Going to revive Sail Fossil.")
 			pushDialogAnswer(5) --Choose Fossil
 			pushDialogAnswer(1) --Confirm
-			return talkToNpcOnCell(12,5)
+			return talkToNpcOnCell(12, 5)
 
 		end		
 	else

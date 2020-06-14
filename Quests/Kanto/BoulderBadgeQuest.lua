@@ -13,10 +13,11 @@ local luaPokemonData = require "Data/luaPokemonData"
 
 local name        = 'Boulder Badge'
 local description = 'from route 2 to route 3'
+local level = 14
 
 local BoulderBadgeQuest = Quest:new()
 function BoulderBadgeQuest:new()
-	local o = Quest.new(BoulderBadgeQuest, name, description, 14)
+	local o = Quest.new(BoulderBadgeQuest, name, description, level)
 	o.checkedForBestPokemon = false
 	o.checkedViridianMazePokeball = false
 	return o
@@ -53,11 +54,19 @@ function BoulderBadgeQuest:ViridianForest()
 		sys.debug("quest", "Going to get secret Pokemon from Viridian Maze.")
 		return moveToCell(19, 38)
 	elseif picked_route == 2 then
-		sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
-		return moveToRectangle(10, 17, 15, 29)
+		if self:needPokecenter() then
+			sys.debug("quest", "Going to heal Pokemon.")
+			return moveToCell(12, 15)
+		elseif not self:isTrainingOver() then
+			sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
+			return moveToRectangle(10, 17, 15, 29)
+		else
+			sys.debug("quest", "Going to Pewter City.")
+			return moveToCell(12, 15)
+		end
 	else
 		sys.debug("quest", "Going to Pewter City.")
-		return moveToCell(12,15)
+		return moveToCell(12, 15)
 	end
 end
 
@@ -83,7 +92,16 @@ end
 
 function BoulderBadgeQuest:Route2Stop2()
 	if picked_route == 2 then
-		return moveToCell(4, 12)
+		if self:needPokecenter() then
+			sys.debug("quest", "Going to heal Pokemon.")
+			return moveToCell(4, 2)
+		elseif not self:isTrainingOver() then
+			sys.debug("quest", "Going to train Pokemon until they are level " .. self.level .. ".")
+			return moveToCell(4, 12)
+		else
+			sys.debug("quest", "Going to Pewter City.")
+			return moveToCell(4, 2)
+		end
 	else
 		sys.debug("quest", "Going to Pewter City.")
 		return moveToCell(4, 2)

@@ -390,7 +390,13 @@ function pc.getBestPokemonIdFromCurrentBox()
 	
 	for i = 1, getCurrentPCBoxSize() do
 		if luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), i)]["TotalStats"] > luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), bestPokemonInBox)]["TotalStats"] then
-			bestPokemonInBox = i
+            for moveId = 1, 4 do
+                if getPokemonMoveNameFromPC(getCurrentPCBoxId(), i, moveId) then
+                    if getPokemonMovePowerFromPC(getCurrentPCBoxId(), i, moveId) > 0 then -- prevent picking a strong pokemon without a damage dealing move, like Haunter
+			            bestPokemonInBox = i
+                    end
+                end
+            end
 		end
 	end
 	

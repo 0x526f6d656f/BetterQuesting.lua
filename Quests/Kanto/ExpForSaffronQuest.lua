@@ -29,89 +29,71 @@ function ExpForSaffronQuest:isDone()
 	return false
 end
 
-function ExpForSaffronQuest:isFinishedFarming()
-	if self:isTrainingOver() then
-		if BUY_BIKE == true and getMoney() > 60000 then
-			return true
-		elseif BUY_BUKE == false then
-			return true
-		end
-	else
-		return false
-	end
-end
-
 function ExpForSaffronQuest:Route20()
-	if not self:isFinishedFarming() then
+	if not self:isTrainingOver() then
 		sys.debug("quest", "Going to Seafoam 1F.")
-		return moveToCell(60,32) --Seafoam 1F
+		return moveToCell(60, 32) --Seafoam 1F
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(120,29)
+		return moveToCell(120, 29)
 	end
 end
 
 function ExpForSaffronQuest:Seafoam1F()
-	if not self:isFinishedFarming() then
+	if not self:isTrainingOver() then
 		sys.debug("quest", "Going to Seafoam B1F.")
-		return moveToCell(20,8) -- Seafoam B1F
+		return moveToCell(20, 8) -- Seafoam B1F
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(13,16)
+		return moveToCell(13, 16)
 	end
 end
 
 function ExpForSaffronQuest:SeafoamB1F()
-	if not self:isFinishedFarming() then
+	if not self:isTrainingOver() then
 		sys.debug("quest", "Going to Seafoam B2F.")
-		return moveToCell(64,25) -- Seafoam B2F
+		return moveToCell(64, 25) -- Seafoam B2F
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(15,12)
+		return moveToCell(15, 12)
 	end
 end
 
 function ExpForSaffronQuest:SeafoamB2F()
-	if not self:isFinishedFarming() then
+	if not self:isTrainingOver() then
 		sys.debug("quest", "Going to Seafoam B3F.")
-		return moveToCell(63,19) -- Seafoam B3F
+		return moveToCell(63, 19) -- Seafoam B3F
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(51,27)
+		return moveToCell(51, 27)
 	end
 end
 
 function ExpForSaffronQuest:SeafoamB3F()
-	
-	if not self:isFinishedFarming() then
+	if not self:isTrainingOver() then
 		sys.debug("quest", "Going to Seafoam B3F.")
-		return moveToCell(57,26) --Seafoam B4F
+		return moveToCell(57, 26) --Seafoam B4F
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(64,16)
+		return moveToCell(64, 16)
 	end	
 end
 
 function ExpForSaffronQuest:SeafoamB4F()
-	if self:isFinishedFarming() then
+	if self:isTrainingOver() then
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(53,28) 
+		return moveToCell(53, 28) 
 	elseif self:needPokecenter() then
 		if getMoney() > 1500 then
 			sys.debug("quest", "Healing with NPC Nurse Joy.")
-			return talkToNpcOnCell(59,13)
-		elseif hasItem("Escape Rope") and getMoney()*0.05 > 550 then
+			return talkToNpcOnCell(59, 13)
+		elseif hasItem("Escape Rope") and getMoney() * 0.05 > 550 then
 			sys.debug("quest", "Using Escape Rope.")
 			return useItem("Escape Rope")
 		end
-	else
-		if not self:isTrainingOver() then
-			sys.debug("quest", "Going to farm Pokemon until they are Level " .. self.level .. ".")
-			return moveToNormalGround()
-		elseif not (BUY_BIKE == true and getMoney() > 60000) then
-			sys.debug("quest", "Going to farm $" .. 60000 - getMoney() .. " more Pokedollars to buy a Bike.")
-			return moveToNormalGround()
-		end
+	elseif not self:isTrainingOver() then
+		sys.debug("quest", "Going to level Pokemon until they are Level " .. self.level .. ".")
+		return moveToNormalGround()
 	end
 end
 

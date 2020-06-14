@@ -1,22 +1,16 @@
-
-
-
 local sys           = require "Libs/syslib"
 local game          = require "Libs/gamelib"
 local pc            = require "Libs/pclib"
 local team          = require "Libs/teamlib"
-local SurfTarget    = require "Data/surfTargets"
+
+local luaPokemonData = require "Data/luaPokemonData"
+
 local Quest         = require "Quests/Quest"
 local Dialog        = require "Quests/Dialog"
-local Set 			= require("Classes/Set")
-
 
 local name		    = 'Soul Badge'
 local description   = 'Fuchsia City'
 local level         = 56
-
-local checkedSnorlax = false
-local checkedDitto = false
 
 local dialogs = {
 	questSurfAccept = Dialog:new({ 
@@ -29,9 +23,8 @@ local SoulBadgeQuest = Quest:new()
 
 function SoulBadgeQuest:new()
 	local o = Quest.new(SoulBadgeQuest, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
 	o.pokemonId = 1
-	o.pokemon = "Ditto"
-	o.forceCaught = false
 	return o
 end
 
@@ -59,86 +52,27 @@ function SoulBadgeQuest:isDone()
 end
 
 function SoulBadgeQuest:canEnterSafari()
-	return getMoney() > 5000	
-end
-
-function SoulBadgeQuest:getWeakestPokemonInTeam()
-	local pkm = {}
-
-	for pokemon = 1, getTeamSize() do
-		local pkmHP = getPokemonStat(pokemon, "HP")
-		local pkmATK = getPokemonStat(pokemon, "ATK")
-		local pkmDEF = getPokemonStat(pokemon, "DEF")
-		local pkmSPATK = getPokemonStat(pokemon, "SPATK")
-		local pkmSPDEF = getPokemonStat(pokemon, "SPDEF")
-		local pkmSPD = getPokemonStat(pokemon, "SPD")
-		local pkmTotal = pkmHP + pkmATK + pkmDEF + pkmSPATK + pkmSPDEF + pkmSPD
-
-		pkm[pokemon] = pkmTotal
-	end
-
-	local weakestPokemon = 1 -- assume weakest pokemon is #1
-
-
-	for key, value in pairs(pkm) do
-		if pkm[key] < pkm[weakestPokemon] then
-			weakestPokemon = key
-		end
-	end
-
-	return weakestPokemon
-end
-
-function SoulBadgeQuest:PokecenterFuchsia()
-	if not (self.checkedSnorlax or self.checkedDitto) then
-		sys.debug("quest", "Going to put Snorlax in our team if we caught it before.")
-		sys.debug("quest", "Also checking for Ditto in Boxes.")
-		if isPCOpen() then
-			if isCurrentPCBoxRefreshed() then
-				if getCurrentPCBoxSize() ~= 0 then
-					for pokemon = 1, getCurrentPCBoxSize() do
-						if getPokemonNameFromPC(getCurrentPCBoxId(), pokemon) == "Snorlax" then
-							sys.debug("team manager", "LOG: Snorlax found in BOX: " .. getCurrentPCBoxId() .."  Slot: ".. pokemon .. ". Swapping with weakest Pokemon: " .. getPokemonName(self:getWeakestPokemonInTeam()))
-							return swapPokemonFromPC(getCurrentPCBoxId(), pokemon, self:getWeakestPokemonInTeam())
-						elseif getPokemonNameFromPC(getCurrentPCBoxId(), pokemon) == "Ditto" then
-							sys.debug("quest", "Ditto found in PC Box.")
-							self.checkedDitto = true
-							self.forceCaught = true
-						end
-					end
-					return openPCBox(getCurrentPCBoxId() + 1)
-				elseif not hasPokemonInTeam("Snorlax") then
-					self.checkedSnorlax = true
-					return log("Checked for Snorlax, but we didn't catch it.")
-				else
-					self.checkedSnorlax = true
-					return log("We now got Snorlax in Team!")
-				end
-			else
-				return
-			end
-		else
-			return usePC()
-		end
-	else
-		self:pokecenter("Fuchsia City")
-	end
+	return getMoney() > 5000
 end
 
 function SoulBadgeQuest:FuchsiaCity()
 
-	if team.getLowestLvl() >= 60 then -- this will be true after ExpForSaffron quest
+	-- this will be true after ExpForSaffron quest
+	if team.getLowestLvl() >= 60 then 
 		sys.debug("quest", "Preparing to go to Saffron City.")
 		return moveToCell(67, 26)
 
+	-- heal team
 	elseif self:needPokecenter() or	not game.isTeamFullyHealed() or	self.registeredPokecenter ~= "Pokecenter Fuchsia" then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(30,39)
+		return moveToCell(30, 39)
 
-	elseif isNpcOnCell(13,7) then -- Hidden Item: PP UP
+	-- item: PP UP
+	elseif isNpcOnCell(13, 7) then
 		sys.debug("quest", "Pickung up hidden item PP UP.")
-		return talkToNpcOnCell(13,7)
+		return talkToNpcOnCell(13, 7)
 
+	-- train team
 	elseif not self:isTrainingOver() then
 		if self:needPokemart() then
 			sys.debug("quest", "Going to buy Pokeballs.")
@@ -148,49 +82,61 @@ function SoulBadgeQuest:FuchsiaCity()
 			return moveToCell(67, 26)
 		end
 
-	elseif not self.forceCaught then
-		sys.debug("quest", "Going to catch Ditto for bike quest.")
-		return moveToCell(67, 26)
-
+	-- gym fight
 	elseif not hasItem("Soul Badge") then
         sys.debug("quest", "Going to fight the gym for 5th badge.")
-		return moveToCell(13,38)
+		return moveToCell(13, 38)
 
+	-- farm money for safari
 	elseif not self:canEnterSafari() and not hasItem("HM03 - Surf") then
         sys.debug("quest", "Farming $" .. 5000 - getMoney() .. " more money, so we can enter the safari.")
 		return moveToCell(67, 26)
 
+	-- safari
 	elseif not hasItem("HM03 - Surf") then
 		if not dialogs.questSurfAccept.state then
             sys.debug("quest", "Going to fight Viktor, so we can enter Safari Zone.")
-			return moveToCell(22,44)
+			return moveToCell(22, 44)
 		else
             sys.debug("quest", "Going to Safari Zone to get HM03 - Surf.")
-			return moveToCell(36,5)
+			return moveToCell(36, 5)
 		end
 	else
         sys.debug("quest", "Going to Route 19.")
-		return moveToCell(22,44)
+		return moveToCell(22, 44)
+	end
+end
+
+function SoulBadgeQuest:PokecenterFuchsia()
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+							log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+							return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		self:pokecenter("Fuchsia City")
 	end
 end
 
 function SoulBadgeQuest:FuchsiaPokemart()
 	self:pokemart("Fuchsia City")
-end
-
-function SoulBadgeQuest:SafariStop()
-	if hasItem("Soul Badge") and dialogs.questSurfAccept.state then
-		if not hasItem("HM03 - Surf") and self:canEnterSafari() then
-			sys.debug("quest", "Going to Safari Zone to get HM03 - Surf.")
-			return talkToNpcOnCell(7,3)
-		else
-			sys.debug("quest", "Going back to Fuchsia City.")
-			return moveToCell(7,15)
-		end
-	else
-		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(7,15)
-	end
 end
 
 function SoulBadgeQuest:Route15StopHouse()
@@ -201,29 +147,65 @@ function SoulBadgeQuest:Route15StopHouse()
 	
 	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Fuchsia" then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(0,6)
+		return moveToCell(0, 6)
 
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		return moveToCell(10,6)
-
-	elseif not self.forceCaught then
-		sys.debug("quest", "Going to catch Ditto for bike quest.")
-		return moveToCell(10,6)
+		return moveToCell(10, 6)
 
 	elseif not self:canEnterSafari() then
 		sys.debug("quest", "Farming $" .. 5000 - getMoney() .. " more money, so we can enter the safari.")
-		return moveToCell(10,6)
+		return moveToCell(10, 6)
 
 	elseif hasItem("HM03 - Surf") then
 		sys.debug("quest", " ???? ")
-		return moveToCell(10,6)
+		-- return moveToCell(10, 6)
 
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
 		return moveToCell(0, 6)
 	end
 end
+
+function SoulBadgeQuest:Route15()
+	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Fuchsia" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(6, 16)
+
+	elseif not self:isTrainingOver() then
+		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
+		return moveToRectangle(50, 19, 56, 22)
+
+	elseif not self:canEnterSafari() and not hasItem("HM03 - Surf") then
+		sys.debug("quest", "Farming $" .. 5000 - getMoney() .. " more money, so we can enter the safari.")
+		return moveToRectangle(50, 19, 56, 22)
+
+	elseif self:canEnterSafari() then
+		sys.debug("quest", "Earned enough money for Safari.")
+		return moveToCell(6, 16)
+	
+	else
+		sys.debug("quest", "Going back to Fuchsia City.")
+		return moveToCell(6, 16)
+	end
+end
+
+function SoulBadgeQuest:SafariStop()
+	if hasItem("Soul Badge") and dialogs.questSurfAccept.state then
+		if not hasItem("HM03 - Surf") and self:canEnterSafari() then
+			sys.debug("quest", "Going to Safari Zone to get HM03 - Surf.")
+			return talkToNpcOnCell(7, 3)
+		else
+			sys.debug("quest", "Going back to Fuchsia City.")
+			return moveToCell(7, 15)
+		end
+	else
+		sys.debug("quest", "Going back to Fuchsia City.")
+		return moveToCell(7, 15)
+	end
+end
+
+
 
 function SoulBadgeQuest:FuchsiaCityStopHouse()
 	if team.getLowestLvl() >= 60 then -- this will be true after ExpForSaffron quest
@@ -272,40 +254,15 @@ function SoulBadgeQuest:Route19()
 	end
 end
 
-function SoulBadgeQuest:Route15()
-	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Fuchsia" then
-		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(6,16)
 
-	elseif not self:isTrainingOver() then
-		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		return moveToRectangle(50, 19, 56, 22)
-
-	elseif not self:canEnterSafari() and not hasItem("HM03 - Surf") then
-		sys.debug("quest", "Farming $" .. 5000 - getMoney() .. " more money, so we can enter the safari.")
-		return moveToRectangle(50, 19, 56, 22)
-
-	elseif not self.forceCaught then
-		sys.debug("quest", "Trying to catch a Ditto for bike quest.")
-		return moveToRectangle(50, 19, 56, 22)
-	
-	elseif self:canEnterSafari() then
-		sys.debug("quest", "Earned enough money for Safari.")
-		return moveToCell(6,16)
-	
-	else
-		sys.debug("quest", "Going back to Fuchsia City..")
-		return moveToCell(6, 16)
-	end
-end
 
 function SoulBadgeQuest:FuchsiaGym()
 	if not hasItem("Soul Badge") then
 		sys.debug("quest", "Going to fight Janine for 5th badge.")
-		return talkToNpcOnCell(7,10)
+		return talkToNpcOnCell(7, 10)
 	else
 		sys.debug("quest", "Going back to Fuchsia City.")
-		return moveToCell(6,16)
+		return moveToCell(6, 16)
 	end
 end
 

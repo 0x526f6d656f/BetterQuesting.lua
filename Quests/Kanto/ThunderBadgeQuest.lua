@@ -92,10 +92,6 @@ function ThunderBadgeQuest:Route6()
 		sys.debug("quest", "Going to talk to Surge in Vermilion City.")
 		return moveToCell(23,61)
 
-	elseif isNpcOnCell(24, 54) then -- Need talk again with Physic Wade for get Item: Dragon Fang
-		sys.debug("quest", "Going to talk to Psychic Wade for Dragon Fang.")
-		return talkToNpcOnCell(24, 54)
-
 	elseif self:needPokecenter() then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(23,61)
@@ -103,10 +99,12 @@ function ThunderBadgeQuest:Route6()
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to train Pokemon until they are all level " .. self.level .. ".")
 
-		if picked_route == 1 then
+		if not picked_route then
+			return moveToCell(24, 61)
+		elseif picked_route == 1 then
 			return moveToCell(0, 52)
 		elseif picked_route == 2 then
-			return moveToRectangle()
+			return moveToRectangle(25, 48, 27, 53)
 		end
 
 	else
@@ -211,8 +209,9 @@ function ThunderBadgeQuest:VermilionCity()
 		return moveToCell(40, 67) -- Enter on SSAnne
 
 	elseif not hasItem("Thunder Badge") then
-		if game.tryTeachMove("Cut","HM01 - Cut") == true then
-			return moveToCell(26,51)
+		if game.tryTeachMove("Cut", "HM01 - Cut") == true then
+			sys.debug("quest", "Going to get 3rd badge.")
+			return moveToCell(26, 51)
 		end
 
 	else
@@ -223,9 +222,11 @@ end
 
 function ThunderBadgeQuest:FishermanHouseVermilion()
 	if not hasItem("Old Rod") then
-		return talkToNpcOnCell(0,6)
+		sys.debug("quest", "Going to get Old Rod.")
+		return talkToNpcOnCell(0, 6)
 	else
-		return moveToCell(5,11)
+		sys.debug("quest", "Going back to Vermilion City.")
+		return moveToCell(5, 11)
 	end
 end
 

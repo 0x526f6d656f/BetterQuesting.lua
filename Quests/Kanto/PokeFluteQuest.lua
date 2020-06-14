@@ -12,7 +12,6 @@ local Dialog = require "Quests/Dialog"
 
 local name		  = 'Poke Flute'
 local description = 'Lavender Town (Pokemon Tower)'
-local level = 34
 
 local dialogs = {
 	checkFujiHouse = Dialog:new({ 
@@ -46,6 +45,25 @@ function PokeFluteQuest:isDone()
 	end
 end
 
+function PokeFluteQuest:LavenderTown()
+	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Lavender" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(9, 5)
+	elseif self:needPokemart() then
+		sys.debug("quest", "Going to buy Pokeballs.")
+		return moveToCell(3, 5)
+	elseif dialogs.checkFujiHouse.state and not dialogs.checkFujiNote.state then
+		sys.debug("quest", "Going to Fuji's House.")
+		return moveToCell(10, 12)
+	elseif not hasItem("Poke Flute") then
+		sys.debug("quest", "Going to Pokemon Tower.")
+		return moveToCell(21, 5)
+	else
+		sys.debug("quest", "Going to Route 12 - Snorlax.")
+		return moveToCell(15, 25)
+	end
+end
+
 function PokeFluteQuest:PokecenterLavender()
 	self:pokecenter("Lavender Town")
 end
@@ -54,42 +72,23 @@ function PokeFluteQuest:LavenderPokemart()
 	self:pokemart("Lavender Town")
 end
 
-function PokeFluteQuest:LavenderTown()
-	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Lavender" then
-		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(9,5)
-	elseif self:needPokemart() then
-		sys.debug("quest", "Going to buy Pokeballs.")
-		moveToCell(3, 5)
-	elseif dialogs.checkFujiHouse.state and not dialogs.checkFujiNote.state then
-		sys.debug("quest", "Going to Fuji's House.")
-		return moveToCell(10,12)
-	elseif not hasItem("Poke Flute") then
-		sys.debug("quest", "Going to Pokemon Tower.")
-		return moveToCell(21,5)
-	else
-		sys.debug("quest", "Going to Route 12 - Snorlax.")
-		return moveToCell(15,25)
-	end
-end
-
 function PokeFluteQuest:LavenderTownVolunteerHouse()
 	if not dialogs.checkFujiNote.state then
 		sys.debug("quest", "Checking Fuji's notes.")
-		return talkToNpcOnCell(10,10)
+		return talkToNpcOnCell(10, 10)
 	else
 		sys.debug("quest", "Going back to Lavender Town.")
-		return moveToCell(5,12)
+		return moveToCell(5, 12)
 	end
 end
 
 function PokeFluteQuest:PokemonTower1F()
 	if hasItem("Poke Flute") then
 		sys.debug("quest", "Going back to Lavender Town.")
-		return moveToCell(9,19)
+		return moveToCell(9, 19)
 	else
 		sys.debug("quest", "Going to top floor to fight the ghost.")
-		return moveToCell(17,11)
+		return moveToCell(17, 11)
 	end
 end
 
@@ -98,10 +97,10 @@ function PokeFluteQuest:PokemonTower2F()
 		return talkToNpcOnCell(6, 6)
 	elseif hasItem("Poke Flute") then
 		sys.debug("quest", "Going back to Lavender Town.")
-		return moveToCell(17,13)
+		return moveToCell(17, 13)
 	else
 		sys.debug("quest", "Going to top floor to fight the ghost.")
-		return moveToCell(1,13)
+		return moveToCell(1, 13)
 	end
 end
 

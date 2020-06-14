@@ -1,18 +1,14 @@
-
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
 local pc = require "Libs/pclib"
-local luaPokemonData = require "Data/luaPokemonData"
-local cutTargets = require "Data/cutTargets"
 local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Rocket Team'
 local description = 'Celadon City Quest'
 local level = 42
-local checkedForBestPokemon = false
-local needCutPokemon = false
 
 local dialogs = {
 	guardQuestAccept = Dialog:new({ 
@@ -57,7 +53,8 @@ function RocketCeladonQuest:new()
 	o.Receptor10check = false
 	o.b4f_ReceptorDone = false
 	o.b3f_ReceptorDone = false
-	o.pokemonId = 1
+
+	o.checkedForBestPokemon = false
 	return o
 end
 
@@ -80,16 +77,78 @@ function RocketCeladonQuest:isDone()
 	end
 end
 
+function RocketCeladonQuest:CeladonCity()
+	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Celadon" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(52, 19)
+
+	elseif self:needPokemart() then
+		sys.debug("quest", "Going to buy Pokeballs.")
+		return moveToCell(24, 20)
+
+	elseif not self:isTrainingOver() and not self:needPokecenter() then
+		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
+		return moveToCell(71, 24)
+
+	elseif isNpcOnCell(48, 34) then 
+		if not dialogs.guardQuestAccept.state then
+			pushDialogAnswer(2)
+			pushDialogAnswer(1)
+			sys.debug("quest", "Going to talk to the guard.")
+			return talkToNpcOnCell(48, 34)
+
+		else
+			dialogs.guardQuestAccept.state = false
+			sys.debug("quest", "Going to Rocket Hideout.")
+			return moveToCell(39, 30)
+
+		end
+	else
+		return -- Quest Finish - Next
+	end
+end
+
+function RocketCeladonQuest:PokecenterCeladon()
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if not (hasMove(teamPokemonIndex, "Cut") or hasMove(teamPokemonIndex, "Surf")) then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
+							end
+						else
+							log(string.format("Skipping %s, since it has Cut or Surf.", getPokemonName(teamPokemonIndex)))
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			return usePC()
+		end
+	else
+		self:pokecenter("Celadon City")
+	end
+end
+
 function RocketCeladonQuest:Route7()
 	if not self.registeredPokecenter == "Pokecenter Celadon" then
 		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(0,23)
+		return moveToCell(0, 23)
 	elseif not self:isTrainingOver() and not self:needPokecenter() then
 		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
 		return moveToCell(10, 31)
 	else
 		sys.debug("quest", "Going to Celadon City.")
-		return moveToCell(0,23)
+		return moveToCell(0, 23)
 	end
 end
 
@@ -145,94 +204,37 @@ function RocketCeladonQuest:CeladonMart2()
 	self:pokemart()
 end
 
-function RocketCeladonQuest:CeladonCity()
-	if self:needPokecenter() or not game.isTeamFullyHealed() or not self.registeredPokecenter == "Pokecenter Celadon" then
-		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(52,19)
-	elseif self:needPokemart() then
-		sys.debug("quest", "Going to buy Pokeballs.")
-		return moveToCell(24, 20)
-	elseif not self:isTrainingOver() and not self:needPokecenter() then
-		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
-		return moveToCell(71, 24)
-	elseif isNpcOnCell(48,34) then 
-		if not dialogs.guardQuestAccept.state then
-			pushDialogAnswer(2)
-			pushDialogAnswer(1)
-			sys.debug("quest", "Going to talk to the guard.")
-			return talkToNpcOnCell(48,34)
-		else
-			dialogs.guardQuestAccept.state = false
-			sys.debug("quest", "Going to Rocket Hideout.")
-			return moveToCell(39,30)
-		end
-	else
-		return -- Quest Finish - Next
-	end
-end
-
-function RocketCeladonQuest:PokecenterCeladon()
-	if not self.checkedForBestPokemon then
-		if isPCOpen() then
-			if isCurrentPCBoxRefreshed() then
-				if getCurrentPCBoxSize() ~= 0 then
-					log("Current Box: " .. getCurrentPCBoxId())
-					log("Box Size: " .. getCurrentPCBoxSize())
-					for teamPokemonIndex = 1, getTeamSize() do
-						if not (hasMove(teamPokemonIndex, "Cut") or hasMove(teamPokemonIndex, "Surf")) then
-							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
-								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
-								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
-							end
-						else
-							log(string.format("Skipping %s, since it has Cut or Surf.", getPokemonName(teamPokemonIndex)))
-						end
-					end
-					return openPCBox(getCurrentPCBoxId() + 1)
-				else
-					sys.debug("quest", "Checked for best Pokemon from PC.")
-					self.checkedForBestPokemon = true
-				end
-			end
-		else
-			return usePC()
-		end
-	else
-		self:pokecenter("Celadon City")
-	end
-end
-
 function RocketCeladonQuest:CeladonCityGameCorner()
 	if not self:isTrainingOver() then
-		moveToCell(3,11)
+		return moveToCell(3, 11)
 	elseif not hasItem("Card Key") then
-		if isNpcOnCell(13,3) then
+		if isNpcOnCell(13, 3) then
 			sys.debug("quest", "Going to talk to Scientist Greg.")
-			return talkToNpcOnCell(13,3)
+			return talkToNpcOnCell(13, 3)
 		else
 			sys.debug("quest", "Going to Rocket Hideout.")
-			return moveToCell(14,3)
+			return moveToCell(14, 3)
 		end
 	else
 		if dialogs.releaseEeveeDone.state or (self.b3f_ReceptorDone and self.b4f_ReceptorDone) then
 			sys.debug("quest", "Going back to Celadon City.")
-			return moveToCell(3,11)
+			return moveToCell(3, 11)
 		else
 			sys.debug("quest", "Going to Rocket Hideout.")
-			return moveToCell(14,3)
+			return moveToCell(14, 3)
 		end
 	end
 end
 
 function RocketCeladonQuest:RocketHideoutB1F()
-	if game.inRectangle(17,15,25,32) then --right room
+	if game.inRectangle(17, 15, 25, 32) then --right room
 		if not hasItem("Lift Key") then
-			if isNpcOnCell(24,20) then
+			if isNpcOnCell(24, 20) then
 				sys.debug("quest", "Going to talk to Scientist Greg.")
-				return talkToNpcOnCell(24,20)
-			elseif isNpcOnCell(23,20) then
+				return talkToNpcOnCell(24, 20)
+			elseif isNpcOnCell(23, 20) then
 				sys.debug("quest", "Getting Item: Lift Key.")
-				return talkToNpcOnCell(23,20)
+				return talkToNpcOnCell(23, 20)
 			end
 		else
 			return moveToRectangle(22, 29, 22, 30) -- AntiStuck Elevator
@@ -242,17 +244,17 @@ function RocketCeladonQuest:RocketHideoutB1F()
 		return talkToNpcOnCell(7, 18)
 	elseif not self:isTrainingOver() then
 		moveToCell(9, 4)
-	elseif game.inRectangle(10,37,13,39) then -- bottom stairs
+	elseif game.inRectangle(10, 37, 13, 39) then -- bottom stairs
 		sys.debug("quest", "Going back to Rocket Hideout B2F.")
-		return moveToCell(13,38)
-	elseif game.inRectangle(1,3,24,14) or game.inRectangle(9,15,15,22) then
+		return moveToCell(13, 38)
+	elseif game.inRectangle(1, 3, 24, 14) or game.inRectangle(9, 15, 15, 22) then
 		if dialogs.releaseEeveeDone.state then
-			return moveToCell(9,4)
+			return moveToCell(9, 4)
 		else
 			if dialogs.releaseEeveeDone.state or (self.b3f_ReceptorDone and self.b4f_ReceptorDone) then
-				return moveToCell(9,4)
+				return moveToCell(9, 4)
 			else
-				return moveToCell(16,4)
+				return moveToCell(16, 4)
 			end
 		end
 	end 
@@ -262,62 +264,62 @@ function RocketCeladonQuest:RocketHideoutElevator()
 	if not hasItem("Card Key") then
 		if dialogs.elevator_B2.state then
 			dialogs.elevator_B2.state = false
-			return moveToCell(2,5)
+			return moveToCell(2, 5)
 		else
 			pushDialogAnswer(2)
-			return talkToNpcOnCell(1,1)
+			return talkToNpcOnCell(1, 1)
 		end
 	else
 		if dialogs.passwordNeeded.state or (self.b3f_ReceptorDone and not self.b4f_ReceptorDone) then-- go b4f
 			if dialogs.elevator_B4.state then
 				dialogs.elevator_B4.state = false
-				return moveToCell(2,5)
+				return moveToCell(2, 5)
 			else
 				pushDialogAnswer(3)
-				return talkToNpcOnCell(1,1)
+				return talkToNpcOnCell(1, 1)
 			end
 		else
 			if dialogs.elevator_B2.state then
 				dialogs.elevator_B2.state = false
-				return moveToCell(2,5)
+				return moveToCell(2, 5)
 			else
 				pushDialogAnswer(2)
-				return talkToNpcOnCell(1,1)
+				return talkToNpcOnCell(1, 1)
 			end
 		end
 	end
 end
 
 function RocketCeladonQuest:RocketHideoutB2F()
-	if isNpcOnCell(28,20) then
-		return talkToNpcOnCell(28,20)
-	elseif isNpcOnCell(28,21) and self.TrashBin_Iron == false then
+	if isNpcOnCell(28, 20) then
+		return talkToNpcOnCell(28, 20)
+	elseif isNpcOnCell(28, 21) and self.TrashBin_Iron == false then
 		self.TrashBin_Iron = true
-		return talkToNpcOnCell(28,21)
+		return talkToNpcOnCell(28, 21)
 	elseif not hasItem("Card Key") then
-		return moveToCell(23,4)
+		return moveToCell(23, 4)
 	elseif not dialogs.passwordNeeded.state and not dialogs.releaseEeveeDone.state and not self.b3f_ReceptorDone then
-		return moveToCell(23,4)--- 26,16 wenn nicht funktioniert
+		return moveToCell(23, 4)--- 26,16 wenn nicht funktioniert
 	elseif dialogs.passwordNeeded.state or (self.b3f_ReceptorDone and not self.b4f_ReceptorDone) then
 		return moveToRectangle(31, 19, 31, 20) -- AntiStuck Elevator
 	elseif dialogs.releaseEeveeDone.state or (self.b3f_ReceptorDone and self.b4f_ReceptorDone) then
-		return moveToCell(31,4) -- Rocket Hideout B1F
+		return moveToCell(31, 4) -- Rocket Hideout B1F
 	else
-		return talkToNpcOnCell(2,3)
+		return talkToNpcOnCell(2, 3)
 	end
 end
 
 function RocketCeladonQuest:RocketHideoutB3F()
-	if isNpcOnCell(15,22) then
-		return talkToNpcOnCell(15,22)
+	if isNpcOnCell(15, 22) then
+		return talkToNpcOnCell(15, 22)
 	elseif not hasItem("Card Key") then
-		return moveToCell(14,22)
-	elseif isNpcOnCell(19,6) then
-		return talkToNpcOnCell(19,6)
-	elseif isNpcOnCell(18,15) then
-		return talkToNpcOnCell(18,15)
+		return moveToCell(14, 22)
+	elseif isNpcOnCell(19, 6) then
+		return talkToNpcOnCell(19, 6)
+	elseif isNpcOnCell(18, 15) then
+		return talkToNpcOnCell(18, 15)
 	elseif dialogs.passwordNeeded.state or (dialogs.releaseEeveeDone.state or self.b3f_ReceptorDone) then
-		return moveToCell(19,4)
+		return moveToCell(19, 4)
 	else
 		if not self.b3f_ReceptorDone and hasItem("Silph Scope") then
 			if not dialogs.releaseEeveeDone.state then
@@ -350,30 +352,30 @@ function RocketCeladonQuest:RocketHideoutB3F()
 				end
 			end	
 		else
-			return talkToNpcOnCell(2,3) -- 1 receptor only for get password dialog
+			return talkToNpcOnCell(2, 3) -- 1 receptor only for get password dialog
 		end
 	end
 end
 
 function RocketCeladonQuest:RocketHideoutB4F()
 	dialogs.passwordNeeded.state = false
-	if game.inRectangle(1,3,12,17) then
+	if game.inRectangle(1, 3, 12, 17) then
 		if not hasItem("Card Key") then
-			if isNpcOnCell(5,6) then
-				return talkToNpcOnCell(5,6)
+			if isNpcOnCell(5, 6) then
+				return talkToNpcOnCell(5, 6)
 			else
-				return talkToNpcOnCell(4,6)
+				return talkToNpcOnCell(4, 6)
 			end
 		else
-			return moveToCell(11,16)
+			return moveToCell(11, 16)
 		end
-	elseif game.inRectangle(16,3,22,14) then -- After HiddenDoor
-		if isNpcOnCell(19,4) then
-			return talkToNpcOnCell(19,4)
-		elseif isNpcOnCell(18,6) then
-			return talkToNpcOnCell(18,6)
+	elseif game.inRectangle(16, 3, 22, 14) then -- After HiddenDoor
+		if isNpcOnCell(19, 4) then
+			return talkToNpcOnCell(19, 4)
+		elseif isNpcOnCell(18, 6) then
+			return talkToNpcOnCell(18, 6)
 		elseif dialogs.releaseEeveeDone.state then
-			return talkToNpcOnCell(18,15)
+			return talkToNpcOnCell(18, 15)
 		elseif not self.b4f_ReceptorDone then
 			if not self.Receptor5check then -- Receptor5check
 				if not dialogs.receptorEmpty.state then
@@ -412,13 +414,13 @@ function RocketCeladonQuest:RocketHideoutB4F()
 				return
 			end
 		else
-			return talkToNpcOnCell(18,15)
+			return talkToNpcOnCell(18, 15)
 		end
-	elseif game.inRectangle(14,16,22,26) or game.inRectangle(1,21,13,26) then -- Before HiddenDoor
-		if isNpcOnCell(19,4) or isNpcOnCell(18,6) then
-			return talkToNpcOnCell(18,15)
+	elseif game.inRectangle(14, 16, 22, 26) or game.inRectangle(1, 21, 13, 26) then -- Before HiddenDoor
+		if isNpcOnCell(19, 4) or isNpcOnCell(18, 6) then
+			return talkToNpcOnCell(18, 15)
 		elseif not dialogs.releaseEeveeDone.state and not self.b4f_ReceptorDone then
-			return talkToNpcOnCell(18,15)
+			return talkToNpcOnCell(18, 15)
 		elseif self.b4f_ReceptorDone then
 			if not self.Receptor9check and not dialogs.releaseEeveeDone.state then -- Receptor7check
 				if not dialogs.receptorEmpty.state then

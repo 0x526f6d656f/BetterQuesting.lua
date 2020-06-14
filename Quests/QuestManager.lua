@@ -14,28 +14,28 @@ local MoonFossilQuest				= require('Quests/Kanto/MoonFossilQuest')
 local CascadeBadgeQuest				= require('Quests/Kanto/CascadeBadgeQuest')
 local ThunderBadgeQuest				= require('Quests/Kanto/ThunderBadgeQuest')
 local LanceVermilionQuest			= require('Quests/Kanto/LanceVermilionQuest')
--- local SSAnneQuest					= require('Quests/Kanto/SSAnneQuest')
--- local HmFlashQuest					= require('Quests/Kanto/HmFlashQuest')
--- local RockTunnelQuest				= require('Quests/Kanto/RockTunnelQuest')
--- local RocketCeladonQuest			= require('Quests/Kanto/RocketCeladonQuest')
--- local RainbowBadgeQuest				= require('Quests/Kanto/RainbowBadgeQuest')
--- local PokeFluteQuest				= require('Quests/Kanto/PokeFluteQuest')
--- local SnorlaxQuest					= require('Quests/Kanto/SnorlaxQuest')
--- local SoulBadgeQuest				= require('Quests/Kanto/SoulBadgeQuest')
--- local HmSurfQuest					= require('Quests/Kanto/HmSurfQuest')
--- local ExpForSaffronQuest			= require('Quests/Kanto/ExpForSaffronQuest')
--- local SaffronGuardQuest				= require('Quests/Kanto/SaffronGuardQuest')
--- local MarshBadgeQuest				= require('Quests/Kanto/MarshBadgeQuest')
--- local BuyBikeQuest					= require('Quests/Kanto/BuyBikeQuest')
--- local SilphCoQuest					= require('Quests/Kanto/SilphCoQuest')
--- local ToCinnabarQuest				= require('Quests/Kanto/ToCinnabarQuest')
--- local CinnabarKeyQuest				= require('Quests/Kanto/CinnabarKeyQuest')
--- local VolcanoBadgeQuest				= require('Quests/Kanto/VolcanoBadgeQuest')
--- local ReviveFossilQuest				= require('Quests/Kanto/ReviveFossilQuest')
--- local EarthBadgeQuest				= require('Quests/Kanto/EarthBadgeQuest')
--- local ExpForElite4Kanto				= require('Quests/Kanto/ExpForElite4Kanto')
--- local Elite4Kanto					= require('Quests/Kanto/Elite4Kanto')
--- local GoToJohtoQuest				= require('Quests/Kanto/GoToJohtoQuest')
+local SSAnneQuest					= require('Quests/Kanto/SSAnneQuest')
+local HmFlashQuest					= require('Quests/Kanto/HmFlashQuest')
+local RockTunnelQuest				= require('Quests/Kanto/RockTunnelQuest')
+local RocketCeladonQuest			= require('Quests/Kanto/RocketCeladonQuest')
+local RainbowBadgeQuest				= require('Quests/Kanto/RainbowBadgeQuest')
+local PokeFluteQuest				= require('Quests/Kanto/PokeFluteQuest')
+local SnorlaxQuest					= require('Quests/Kanto/SnorlaxQuest')
+local SoulBadgeQuest				= require('Quests/Kanto/SoulBadgeQuest')
+local HmSurfQuest					= require('Quests/Kanto/HmSurfQuest')
+local ExpForSaffronQuest			= require('Quests/Kanto/ExpForSaffronQuest')
+local SaffronGuardQuest				= require('Quests/Kanto/SaffronGuardQuest')
+local MarshBadgeQuest				= require('Quests/Kanto/MarshBadgeQuest')
+local SilphCoQuest					= require('Quests/Kanto/SilphCoQuest')
+local ToCinnabarQuest				= require('Quests/Kanto/ToCinnabarQuest')
+local CinnabarKeyQuest				= require('Quests/Kanto/CinnabarKeyQuest')
+local VolcanoBadgeQuest				= require('Quests/Kanto/VolcanoBadgeQuest')
+local ReviveFossilQuest				= require('Quests/Kanto/ReviveFossilQuest')
+local BuyBikeQuest					= require('Quests/Kanto/BuyBikeQuest')
+local EarthBadgeQuest				= require('Quests/Kanto/EarthBadgeQuest')
+local ExpForElite4Kanto				= require('Quests/Kanto/ExpForElite4Kanto')
+local Elite4Kanto					= require('Quests/Kanto/Elite4Kanto')
+local GoToJohtoQuest				= require('Quests/Kanto/GoToJohtoQuest')
 
 
 --Johto
@@ -82,28 +82,28 @@ local quests = {
 	CascadeBadgeQuest:new(),
 	ThunderBadgeQuest:new(),
 	LanceVermilionQuest:new(),
-	-- SSAnneQuest:new(),	
-	-- HmFlashQuest:new(),
-	-- RockTunnelQuest:new(),
-	-- RocketCeladonQuest:new(),
-	-- RainbowBadgeQuest:new(),
-	-- PokeFluteQuest:new(),
-	-- SnorlaxQuest:new(),
-	-- SoulBadgeQuest:new(),
-	-- HmSurfQuest:new(),
-	-- ExpForSaffronQuest:new(),
-	-- SaffronGuardQuest:new(),
-	-- MarshBadgeQuest:new(),
-	-- BuyBikeQuest:new(),
-	-- SilphCoQuest:new(),
-	-- ToCinnabarQuest:new(),
-	-- CinnabarKeyQuest:new(),
-	-- VolcanoBadgeQuest:new(),
-	-- ReviveFossilQuest:new(),
-	-- EarthBadgeQuest:new(),
-	-- ExpForElite4Kanto:new(),
-	-- Elite4Kanto:new(),
-	-- GoToJohtoQuest:new(),
+	SSAnneQuest:new(),
+	HmFlashQuest:new(),
+	RockTunnelQuest:new(),
+	RocketCeladonQuest:new(),
+	RainbowBadgeQuest:new(),
+	PokeFluteQuest:new(),
+	SnorlaxQuest:new(),
+	SoulBadgeQuest:new(),
+	HmSurfQuest:new(),
+	ExpForSaffronQuest:new(),
+	SaffronGuardQuest:new(),
+	MarshBadgeQuest:new(),
+	SilphCoQuest:new(),
+	ToCinnabarQuest:new(),
+	CinnabarKeyQuest:new(),
+	VolcanoBadgeQuest:new(),
+	ReviveFossilQuest:new(),
+	BuyBikeQuest:new(),
+	EarthBadgeQuest:new(),
+	ExpForElite4Kanto:new(),
+	Elite4Kanto:new(),
+	GoToJohtoQuest:new(),
 	
 	-- Johto Quests 
 	-- StartJohtoQuest:new(),

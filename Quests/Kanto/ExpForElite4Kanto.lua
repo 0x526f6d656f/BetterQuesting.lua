@@ -27,6 +27,7 @@ local ExpForElite4Kanto = Quest:new()
 
 function ExpForElite4Kanto:new()
 	local o = Quest.new(ExpForElite4Kanto, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
 	o.qnt_revive = 32
 	o.qnt_hyperpot = 32
 	return o
@@ -67,9 +68,6 @@ function ExpForElite4Kanto:buyReviveItems() --return false if all items are on t
 	end
 end
 
-
-
-
 function ExpForElite4Kanto:canBuyReviveItems()
 	local bag_revive = getItemQuantity("Revive")
 	local bag_hyperpot = getItemQuantity("Hyper Potion")
@@ -91,7 +89,6 @@ function ExpForElite4Kanto:Route22()
 		sys.debug("quest", "Going to talk to NPC.")
 		return talkToNpcOnCell(16, 8)
 	else
-		--Bad named map: "Pokemon League Reception Gate"
 		sys.debug("quest", "Going to E4.")
 		return moveToCell(9, 8)
 	end
@@ -232,10 +229,6 @@ function ExpForElite4Kanto:IndigoPlateauCenter()
 		sys.debug("quest", "Going back to Pokemon League Reception Gate.")
 		return moveToCell(10, 28)
 	end
-end
-
-function ExpForElite4Kanto:MapName()
-	
 end
 
 return ExpForElite4Kanto

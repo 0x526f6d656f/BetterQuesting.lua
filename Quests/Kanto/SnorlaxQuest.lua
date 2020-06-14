@@ -11,8 +11,7 @@ local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
 
 local name		  = 'Route 12 to Fuchsia City'
-local description = 'Snorlax Wakeup + All Items'
-local level = 34
+local description = 'Catch Snorlax, get all items, go to Fuchsia City.'
 
 local SnorlaxQuest = Quest:new()
 
@@ -35,33 +34,33 @@ function SnorlaxQuest:isDone()
 end
 
 function SnorlaxQuest:Route12()
-	if isNpcOnCell(18,47) then --NPC: Snorlax
+	if isNpcOnCell(18, 47) then --NPC: Snorlax
 		sys.debug("quest", "Going to fight and try to catch Snorlax.")
-		return talkToNpcOnCell(18,47)
+		return talkToNpcOnCell(18, 47)
 	else
 		sys.debug("quest", "Going to Route 13.")
-		return moveToCell(25,92)
+		return moveToCell(25, 92)
 	end
 end
 
 function SnorlaxQuest:Route13()
 	sys.debug("quest", "Going to Route 14.")
-	return moveToCell(18,34)
+	return moveToCell(18, 34)
 end
 
 function SnorlaxQuest:Route14()
 	sys.debug("quest", "Going to Route 15.")
-	return moveToCell(0,46)
+	return moveToCell(0, 46)
 end
 
 function SnorlaxQuest:Route15()
 	sys.debug("quest", "Going to Fuchsia City.")
-	return moveToCell(6,16)
+	return moveToCell(6, 16)
 end
 
 function SnorlaxQuest:Route15StopHouse()
 	sys.debug("quest", "Going to Fuchsia City.")
-	return moveToCell(0,6)
+	return moveToCell(0, 6)
 end
 
 return SnorlaxQuest
