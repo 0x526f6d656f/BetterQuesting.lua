@@ -6,9 +6,12 @@
 
 
 local sys    = require "Libs/syslib"
+local pc	 = require "Libs/pclib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
+
 
 local name		  = 'Rising Badge Quest'
 local description = 'Will exp to lv 80 and earn the 8th badge'
@@ -17,7 +20,10 @@ local level = 75
 local RisingBadgeQuest = Quest:new()
 
 function RisingBadgeQuest:new()
-	return Quest.new(RisingBadgeQuest, name, description, level, dialogs)
+	local o = Quest.new(RisingBadgeQuest, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
+
+	return o
 end
 
 function RisingBadgeQuest:isDoable()
@@ -119,7 +125,33 @@ function RisingBadgeQuest:BlackthornCity()
 end
 
 function RisingBadgeQuest:PokecenterBlackthorn()
-	self:pokecenter("Blackthorn City")
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		self:pokecenter("Blackthorn City")
+	end
 end
 
 function RisingBadgeQuest:BlackthornCityPokemart()
@@ -138,6 +170,7 @@ end
 
 function RisingBadgeQuest:DragonsDen()
 	if self:needPokecenter() or self:isTrainingOver() then 
+		self.checkedForBestPokemon = false
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(40, 16)
 	else
@@ -148,7 +181,7 @@ end
 
 function RisingBadgeQuest:BlackthornCityGym()
 	sys.debug("quest", "Going to get 8th badge.")
-	return talkToNpcOnCell(29,12)
+	return talkToNpcOnCell(29, 12)
 end
 
 return RisingBadgeQuest

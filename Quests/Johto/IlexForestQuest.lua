@@ -23,7 +23,7 @@ local IlexForestQuest = Quest:new()
 
 function IlexForestQuest:new()
 	local o = Quest.new(IlexForestQuest, name, description, level, dialogs)
-	o.pokemon = "Metapod"
+	o.pokemon = "Caterpie"
 	o.forceCaught = false
 	return o
 end
@@ -57,19 +57,19 @@ function IlexForestQuest:IlexForest()
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(10, 74)
 
-	elseif isNpcOnCell(12,58) then
+	elseif isNpcOnCell(12, 58) then
 		if not dialogs.farfetchQuestAccept.state then
 			sys.debug("quest", "Going to talk to NPC.")
-			return talkToNpcOnCell(12,58)
+			return talkToNpcOnCell(12, 58)
 
 		else
-			if isNpcOnCell(47,42) then
+			if isNpcOnCell(47, 42) then
 				sys.debug("quest", "Going to talk to Farfetch'd.")
-				return talkToNpcOnCell(47,42)
+				return talkToNpcOnCell(47, 42)
 
 			else
 				sys.debug("quest", "Going to talk to NPC.")
-				return talkToNpcOnCell(12,58)
+				return talkToNpcOnCell(12, 58)
 
 			end
 		end

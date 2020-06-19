@@ -4,7 +4,6 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @WiWi__33[NetPaPa]
 
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
@@ -14,30 +13,32 @@ local name		  = 'Glacier Badge Quest'
 local description = 'Will clear the Rocket Hideout, and earn the 7th Badge'
 local level = 64
 
-local talkedToChappyNPC = false
-local N = 1
-local lance = false
-local computerone = false
-local admin = false
-local pcJames = false
-local pcJessie = false
-
-local GlacierBadgeQuest = Quest:new()
 local dialogs = {
-	fdp = Dialog:new({ 
-		"Rats, no sign of any picture with Christina on this desk!"
-		
-		
+	goChangeComputerSettings = Dialog:new({
+		"Please go back before you trigger something around here!",
 	}),
-	marchefdp = Dialog:new({ 
+	checkNextComputer = Dialog:new({ 
+		"Rats, no sign of any picture with Christina on this desk!"
+	}),
+	foundComputer = Dialog:new({ 
 		"I don't have anything to do with this now...",
 		"Yes, this was the computer!"
-		
+	}),
+	disabledAdminPC = Dialog:new({
+		"I'm done with this PC now...",
 	})
-
 }
+
+local GlacierBadgeQuest = Quest:new()
+
 function GlacierBadgeQuest:new()
-	return Quest.new(GlacierBadgeQuest, name, description, level, dialogs)
+	local o = Quest.new(GlacierBadgeQuest, name, description, level, dialogs)
+	o.talkedToChappyNPC = false
+	o.N = 1
+	o.checkedJessiePC = false
+	o.checkedJamesPC = false
+	o.foughtAdminChristina = false
+	return o
 end
 
 
@@ -65,6 +66,9 @@ function GlacierBadgeQuest:OlivineCity()
 	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Olivine Pokecenter" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(13, 32)
+	elseif self:needPokemart() then
+		sys.debug("quest", "Going to buy Pokeballs.")
+		return moveToCell(27, 31)
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToCell(0, 36)
@@ -76,6 +80,10 @@ end
 
 function GlacierBadgeQuest:OlivinePokecenter()
 	self:pokecenter("Olivine City")
+end
+
+function GlacierBadgeQuest:OlivinePokemart()
+	self:pokemart()
 end
 
 function GlacierBadgeQuest:Route40()
@@ -167,7 +175,7 @@ function GlacierBadgeQuest:MahoganyTown()
 	elseif not self:isTrainingOver() and not self:needPokecenter() then
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToCell(0, 17)
-	elseif not isNpcOnCell(11,24) then
+	elseif not isNpcOnCell(11, 24) then
 		sys.debug("quest", "Going to get 7th badge.")
 		return moveToCell(11, 23)
 	elseif not self.talkedToChappyNPC then
@@ -176,6 +184,15 @@ function GlacierBadgeQuest:MahoganyTown()
 	elseif self.talkedToChappyNPC then 
 		sys.debug("quest", "Going to do Rocket quest.")
 		return moveToCell(16, 14)
+	end
+end
+
+function GlacierBadgeQuest:PokecenterMahogany()
+	if isNpcOnCell(9, 22) then
+		sys.debug("quest", "Going to talk to NPC.")
+		return talkToNpcOnCell(9, 22)
+	else
+		return self:pokecenter("Mahogany Town")
 	end
 end
 
@@ -190,9 +207,9 @@ function GlacierBadgeQuest:Route43()
 end
 
 function GlacierBadgeQuest:LakeofRage()
-	if isNpcOnCell(50,28) then
+	if isNpcOnCell(50, 28) then
 		sys.debug("quest", "Going to talk to Chappy.")
-		return talkToNpcOnCell(50,28)
+		return talkToNpcOnCell(50, 28)
 	else
 		self.talkedToChappyNPC = true
 		sys.debug("quest", "Going to do Rocket quest.")
@@ -211,167 +228,144 @@ function GlacierBadgeQuest:MahoganyTownRocketHideoutB1F()
 end
 
 function GlacierBadgeQuest:MahoganyTownRocketHideoutB2F()
-	if game.inRectangle(3, 23, 48, 30) and not lance then 
-		if isNpcOnCell(24, 22) then
-			if not game.inRectangle(24, 23, 24, 23) then
-				moveToCell(24,23,24,23)
+	-- bottom part
+	if game.inRectangle(0, 23, 50, 30) then
+		if not dialogs.goChangeComputerSettings.state then 
+			if isNpcOnCell(24, 22) then
+				sys.debug("quest", "Going to talk to Lance.")
+				if not game.inCell(24, 23) then
+					return moveToCell(24, 23)
+				else
+					return talkToNpcOnCell(24, 22)
+				end
 			else
-				talkToNpcOnCell(24,22) 
-				lance = true
-				return
+				dialogs.goChangeComputerSettings.state = true
 			end
-		else 
-			moveToCell(24,22)
-		end
-	elseif game.inRectangle(3,30,48,23) and not isNpcOnCell(24,22) then
-		moveToCell(24,22)
-	elseif game.inRectangle(3,30,48,23) then
-		moveToCell(49,30)
-	elseif game.inRectangle(14,22,26,9) then
-		if isNpcOnCell(15,12) then
-			talkToNpcOnCell(15,12)
-		elseif isNpcOnCell(15,13) then
-			talkToNpcOnCell(15,13) 
-		elseif isNpcOnCell(15,14) then
-			talkToNpcOnCell(15,14)
+		elseif isNpcOnCell(33, 13) then
+			sys.debug("quest", "Going to fight Electrodes.")
+			return moveToCell(23, 18)
 		else
-			talkToNpcOnCell(24,22)
+			sys.debug("quest", "Going to change Computer Settings.")
+			return moveToCell(49, 30)
 		end
-	elseif game.inRectangle(3,3,48,5) or game.inRectangle(46,6,40,19) then 
-		if not admin and not pcJessie then
-			if not game.inRectangle(40,18,40,18) then
-				moveToCell(40,18)
-			else
-				talkToNpcOnCell(40,17)
-				pcJessie = true
-				return
-			end
-		elseif admin then 
-			moveToCell(49,5)
-		else
-			moveToCell(2,5)
-		end
-	elseif game.inRectangle(3,9,9,19) then
-		if not admin and not pcJames then
-			if not game.inRectangle(5,18,5,18) then
-				return moveToCell(5,18)
-			else
-				talkToNpcOnCell(5,17)
-				pcJames = true	
-				return
+
+
+
+	-- middle part
+	elseif game.inRectangle(12, 9, 37, 22) then
+		if isNpcOnCell(33, 13) then
+			if isNpcOnCell(15, 12) then
+				sys.debug("quest", "Going to fight Pokemon 1/3.")
+				return talkToNpcOnCell(15, 12)
+			elseif isNpcOnCell(15, 13) then
+				sys.debug("quest", "Going to fight Pokemon 2/3.")
+				return talkToNpcOnCell(15, 13)
+			elseif isNpcOnCell(15, 14) then
+				sys.debug("quest", "Going to fight Pokemon 3/3.")
+				return talkToNpcOnCell(15, 14)
 			end
 		else
-			moveToCell(2,10)
+			sys.debug("quest", "Going to talk to Lance.")
+			return talkToNpcOnCell(24, 22)
+		end
+
+
+	-- top part
+	elseif game.inRectangle(2, 3, 49, 5) or game.inRectangle(40, 6, 46, 19) then
+		if not self.checkedJessiePC then
+			sys.debug("quest", "Going to check Jessie's PC.")
+			if not game.inCell(40, 18) then
+				return moveToCell(40, 18)
+			else
+				if talkToNpcOnCell(40, 17) then
+					self.checkedJessiePC = true
+				end
+			end
+		elseif self.checkedJessiePC and self.checkedJamesPC then 
+			sys.debug("quest", "Going to talk to Lance.")
+			return moveToCell(49, 5)
+		else
+			sys.debug("quest", "Going to check James' PC.")
+			return moveToCell(2, 5)
+		end
+
+	-- left part
+	elseif game.inRectangle(2, 9, 9, 19) then
+		if not self.checkedJamesPC then
+			sys.debug("quest", "Going to check James' PC.")
+			if not game.inCell(5, 18) then
+				return moveToCell(5, 18)
+			else
+				if talkToNpcOnCell(5, 17) then
+					self.checkedJamesPC = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to talk to Lance.")
+			return moveToCell(2, 10)
 		end
 	end
 end
 
+function GlacierBadgeQuest:talkToComputer(x, y)
+	if not game.inCell(x, y + 1) then
+		return moveToCell(x, y + 1)
+	else
+		return talkToNpcOnCell(x, y)
+	end
+end
 
 function GlacierBadgeQuest:MahoganyTownRocketHideoutB3F()
-	if game.inRectangle(48,4,26,30) then
-		if dialogs.fdp.state then
-			dialogs.fdp.state = false
-			N = N + 1
+	if game.inRectangle(25, 3, 50, 30) or game.inRectangle(5, 23, 25, 30) then
+		if dialogs.checkNextComputer.state then
+			dialogs.checkNextComputer.state = false
+			self.N = self.N + 1
 			return
-		elseif dialogs.marchefdp.state then
-			if not admin then
-			moveToCell(49,5)
-			else moveToCell(49,30)
+		elseif dialogs.foundComputer.state then
+			if not self.foughtAdminChristina then
+				sys.debug("quest", "Going to check Admin PC.")
+				return moveToCell(49, 5)
+			else
+				sys.debug("quest", "Going to talk to Lance.")
+				return moveToCell(49, 30)
 			end
-		elseif N == 1 then
-				if not game.inRectangle(40,19,40,19) then
-					moveToCell(40,19)
-				else
-				talkToNpcOnCell(40,18)
-				return
-				end
-		elseif N == 2 then
-				if not game.inRectangle(37,19,37,19) then
-					moveToCell(37,19)
-				else
-				talkToNpcOnCell(37,18)
-				
-				return
-				end
-		elseif  N == 3 then
-				if not game.inRectangle(34,19,34,19) then
-					moveToCell(34,19)
-				else
-				talkToNpcOnCell(34,18)
-				
-				return
-				end
-		elseif  N == 4 then
-				if not game.inRectangle(31,19,31,19) then
-					moveToCell(31,19)
-				else
-				talkToNpcOnCell(31,18)
-				
-				return
-				end
-		elseif N == 5 then
-				if not game.inRectangle(40,15,40,15) then
-					moveToCell(40,15)
-				else
-				talkToNpcOnCell(40,14)
-				
-				return
-				end
-		elseif N == 6 then
-				if not game.inRectangle(37,15,37,15) then
-					moveToCell(37,15)
-				else
-				talkToNpcOnCell(37,14)
-			
-				return
-				end
-		elseif N == 7 then
-				if not game.inRectangle(34,15,34,15) then
-					moveToCell(34,15)
-				else
-				talkToNpcOnCell(34,14)
-			
-				return
-				end
-		elseif N == 8 then
-				if not game.inRectangle(31,15,31,15) then
-					moveToCell(31,15)
-					else
-				talkToNpcOnCell(31,14)
-				
-				return
-				end
-			
-		elseif not admin then
-			moveToCell(49,5)
-		else moveToCell(49,30)
-		end
-	elseif game.inRectangle(3,4,23,19) then
-		if isNpcOnCell(18,15) then 
-			moveToCell(2,10)
-		elseif isNpcOnCell(18,9) and  not admin then
-			talkToNpcOnCell(18,9)
-		elseif not admin then
-			if not game.inRectangle(16,7,16,7)then
-				moveToCell(16,7)
-			else	
-			talkToNpcOnCell(16,6)
-			admin = true
-			return
+		else
+			sys.debug("quest", string.format("Going to check computer #%i.", self.N))
+			if self.N == 1 then
+				return self:talkToComputer(40, 18)
+			elseif self.N == 2 then
+				return self:talkToComputer(37, 18)
+			elseif self.N == 3 then
+				return self:talkToComputer(34, 18)
+			elseif self.N == 4 then
+				return self:talkToComputer(31, 18)
+			elseif self.N == 5 then
+				return self:talkToComputer(40, 14)
+			elseif self.N == 6 then
+				return self:talkToComputer(37, 14)
+			elseif self.N == 7 then
+				return self:talkToComputer(34, 14)
+			elseif self.N == 8 then
+				return self:talkToComputer(31, 14)
 			end
-		else moveToCell(2,5)
 		end
-	end
-end
 
-
-
-function GlacierBadgeQuest:PokecenterMahogany()
-	if isNpcOnCell(9,22) then
-		sys.debug("quest", "Going to talk to NPC.")
-		return talkToNpcOnCell(9,22)
 	else
-		return self:pokecenter("Mahogany Town")
+		if not self.checkedJamesPC then 
+			sys.debug("quest", "Going to check James' PC.")
+			return moveToCell(2, 10)
+		elseif isNpcOnCell(18, 9) then
+			sys.debug("quest", "Going to talk to Admin Christina.")
+			return talkToNpcOnCell(18, 9)
+		elseif self.foughtAdminChristina and not dialogs.disabledAdminPC.state then
+			sys.debug("quest", "Going to check Admin Christina's PC.")
+			return self:talkToComputer(16, 6)
+		elseif self.foughtAdminChristina and dialogs.disabledAdminPC.state then
+			sys.debug("quest", "Going to talk to Lance.")
+			return moveToCell(2, 5)
+		elseif not isNpcOnCell(18, 9) then
+			self.foughtAdminChristina = true
+		end
 	end
 end
 

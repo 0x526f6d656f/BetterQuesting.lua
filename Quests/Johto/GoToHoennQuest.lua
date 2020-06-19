@@ -2,23 +2,17 @@
 -- This work is free. You can redistribute it and/or modify it under the
 -- terms of the Do What The Fuck You Want To Public License, Version 2,
 -- as published by Sam Hocevar. See the COPYING file for more details.
--- Quest: @Rympex
-
+-- Quest: @Atem
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Go to Hoenn'
 local description = 'Catch a Rattata, level it to 80, fight Youngster Joey, go to Hoenn'
 local level = 80
-
-local dialogs = {
-	a = Dialog:new({ 
-		" "
-	})
-}
 
 local GoToHoennQuest = Quest:new()
 
@@ -38,13 +32,12 @@ function GoToHoennQuest:isDoable()
 end
 
 function GoToHoennQuest:isDone()
-	if hasItem("xxx") and getMapName() == "xxx" then
+	if getMapName() == "Littleroot Town Truck" then
 		return true
 	else
 		return false
 	end
 end
-
 
 -- START special functions 
 
@@ -57,26 +50,11 @@ function GoToHoennQuest:hasLevel80Rattata()
 end
 
 function GoToHoennQuest:getWeakestPokemonInTeam()
-	local pkm = {}
+	local weakestPokemon = 1 -- assume first in team is weakest
 
-	for pokemon = 1, getTeamSize() do
-		local pkmHP = getPokemonStat(pokemon, "HP")
-		local pkmATK = getPokemonStat(pokemon, "ATK")
-		local pkmDEF = getPokemonStat(pokemon, "DEF")
-		local pkmSPATK = getPokemonStat(pokemon, "SPATK")
-		local pkmSPDEF = getPokemonStat(pokemon, "SPDEF")
-		local pkmSPD = getPokemonStat(pokemon, "SPD")
-		local pkmTotal = pkmHP + pkmATK + pkmDEF + pkmSPATK + pkmSPDEF + pkmSPD
-
-		pkm[pokemon] = pkmTotal
-	end
-
-	local weakestPokemon = 1 -- assume weakest pokemon is #1
-
-
-	for key, value in pairs(pkm) do
-		if pkm[key] < pkm[weakestPokemon] then
-			weakestPokemon = key
+	for i = 1, getTeamSize() do
+		if luaPokemonData[getPokemonName(i)]["TotalStats"] < luaPokemonData[getPokemonName(weakestPokemon)]["TotalStats"] then
+			weakestPokemon = i
 		end
 	end
 
@@ -267,6 +245,7 @@ function GoToHoennQuest:PokecenterCinnabar()
 					for i = 1, getCurrentPCBoxSize() do
 						if getPokemonLevelFromPC(getCurrentPCBoxId(), i) > 40 then
 							if getPokemonNameFromPC(getCurrentPCBoxId(), i) == "Rattata" then
+								log(string.format("Swapping Team Pokemon %s out with Rattata Lv %i from Boxes.", getPokemonName(i), getPokemonLevelFromPC(getCurrentPCBoxId(), i)))
 								return swapPokemonFromPC(getCurrentPCBoxId(), i, self:getWeakestPokemonInTeam())
 							end
 						end
@@ -355,7 +334,7 @@ function GoToHoennQuest:SeafoamB4F()
 		if self:needPokecenter() then
 			if self:canUseNurse() then -- if have 1500 money
 				sys.debug("quest", "Going to heal Pokemon.")
-				return talkToNpcOnCell(59,13)
+				return talkToNpcOnCell(59, 13)
 			end
 		else
 			sys.debug("quest", "Going to level Rattata to Level 80.")
@@ -365,18 +344,6 @@ function GoToHoennQuest:SeafoamB4F()
 		sys.debug("quest", "Going to fight Youngster Joey with our Level 80 Rattata.")
 		return moveToCell(53, 28) -- Link: Seafoam B3F
 	end
-end
-
-function GoToHoennQuest:nnnnnnnn()
-	
-end
-
-function GoToHoennQuest:nnnnnnnn()
-	
-end
-
-function GoToHoennQuest:nnnnnnnn()
-	
 end
 
 return GoToHoennQuest

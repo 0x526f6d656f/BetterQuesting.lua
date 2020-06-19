@@ -8,7 +8,6 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'Violet City'
 local description = 'Badge Quest'
@@ -35,8 +34,9 @@ function ZephyrBadgeQuest:isDone()
 end
 
 function ZephyrBadgeQuest:PokecenterVioletCity()
-	if isNpcOnCell(11,21) then--Guide BOB
-		return talkToNpcOnCell(11,21)
+	if isNpcOnCell(11, 21) then -- Guide BOB
+		sys.debug("quest", "Going to talk to Guide Bob.")
+		return talkToNpcOnCell(11, 21)
 	else
 		self:pokecenter("Violet City")
 	end
@@ -51,10 +51,7 @@ function ZephyrBadgeQuest:VioletCityPokemart()
 end
 
 function ZephyrBadgeQuest:VioletCity()
-	if self:needPokecenter()
-		or not game.isTeamFullyHealed()
-		or self.registeredPokecenter ~= "Pokecenter Violet City"
-	then
+	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Violet City" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(48, 57)
 
@@ -92,9 +89,9 @@ function ZephyrBadgeQuest:Route32()
 			return moveToRectangle(25, 9, 28, 15)
 		end
 	else
-		if isNpcOnCell(26,23) then
+		if isNpcOnCell(26, 23) then
 			sys.debug("quest", "Going to talk to Guard.")
-			return talkToNpcOnCell(26,23)
+			return talkToNpcOnCell(26, 23)
 
 		elseif self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Route 32" then
 			sys.debug("quest", "Going to heal Pokemon.")
@@ -121,7 +118,7 @@ end
 function ZephyrBadgeQuest:VioletCityGym()
 	if not hasItem("Zephyr Badge") then
 		sys.debug("quest", "Going to get 1st badge.")
-		return talkToNpcOnCell(7,4)
+		return talkToNpcOnCell(7, 4)
 	else
 		sys.debug("quest", "Going back to Violet City.")
 		return moveToCell(7, 20)
@@ -130,7 +127,7 @@ end
 
 function ZephyrBadgeQuest:UnionCave1F()
 	sys.debug("quest", "Going to Azalea Town.")
-	return moveToCell(42,84)
+	return moveToCell(42, 84)
 end
 
 function ZephyrBadgeQuest:Route33()

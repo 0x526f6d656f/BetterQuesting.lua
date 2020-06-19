@@ -7,14 +7,16 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Elite 4 Johto'
 local description = 'Will beat the E4'
 local level = 98
-local teamManaged = false
-local bestteam = false
+
 local dialogs = {
 	leagueDefeated = Dialog:new({ 
 		"I am already the Champ, don't need to go in there...",
@@ -35,7 +37,7 @@ local Elite4Johto = Quest:new()
 
 function Elite4Johto:new()
 	local o = Quest.new(Elite4Johto, name, description, level, dialogs)
-	o.pokemonId = 1
+	o.checkedForBestPokemon = false
 	o.qnt_revive = 32
 	o.qnt_hyperpot = 32
 	return o
@@ -107,40 +109,43 @@ function Elite4Johto:BlackthornCity()
 	if not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Blackthorn" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(29, 39)
-	else 
-		sys.debug("quest", "Going to Johto E4.")
-		return moveToCell(20, 50)
+	elseif self.checkedForBestPokemon then
+		if game.tryTeachMove("Surf", "HM03 - Surf") then
+			sys.debug("quest", "Going to Johto E4.")
+			return moveToCell(20, 50)
+		else
+			fatal("Tell @Atem on GitHub to fix me.")
+		end
 	end
 end
 
 function Elite4Johto:PokecenterBlackthorn()
-	if not isTeamSortedByLevelAscending() then
-		return sortTeamByLevelAscending()
-	elseif not self.bestteam then
+	if not self.checkedForBestPokemon then
 		if isPCOpen() then
 			if isCurrentPCBoxRefreshed() then
-				if getCurrentPCBoxSize() > 0 then
+				if getCurrentPCBoxSize() ~= 0 then
 					log("Current Box: " .. getCurrentPCBoxId())
 					log("Box Size: " .. getCurrentPCBoxSize())
-					for i = 1, getCurrentPCBoxSize() do
-						if getPokemonLevelFromPC(getCurrentPCBoxId(), i) > 90 then
-							return swapPokemonFromPC(getCurrentPCBoxId(), i, 1)
+					for teamPokemonIndex = 1, getTeamSize() do
+						if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+							log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+							return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
 						end
 					end
 					return openPCBox(getCurrentPCBoxId() + 1)
 				else
-					sys.debug("quest", "Swapped best Pokemon from PC.")
-					self.bestteam = true
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
 				end
 			end
 		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
 			return usePC()
 		end
 	else
 		self:pokecenter("Blackthorn City")
 	end
 end
-
 
 function Elite4Johto:Route45()
 	sys.debug("quest", "Going to Johto E4.")
@@ -184,16 +189,7 @@ function Elite4Johto:NewBarkTownPlayerHouse()
 end
 
 function Elite4Johto:Route27()
-	if not game.hasPokemonWithMove("Surf") then
-		if self.pokemonId <= getTeamSize() then
-			useItemOnPokemon("HM03 - Surf", self.pokemonId)
-			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
-			self.pokemonId = self.pokemonId + 1
-			return
-		else
-			fatal("No pokemon in this team can learn - Surf")
-		end
-	elseif game.inRectangle(15, 29, 90, 39) or game.inRectangle(63, 25, 86, 28) or game.inRectangle(0, 0, 62, 28) then
+	if game.inRectangle(15, 29, 90, 39) or game.inRectangle(63, 25, 86, 28) or game.inRectangle(0, 0, 62, 28) then
 		sys.debug("quest", "Going to Johto E4.")
 		return moveToCell(56, 16)
 	else
@@ -223,33 +219,6 @@ function Elite4Johto:PokemonLeagueReceptionGate()
 		dialogs.leagueDefeated.state = true
 	end
 end
-
---function Elite4Johto:PokecenterCinnabar()
---	if self:needPokecenter() then
---		self:pokecenter("Cinnabar Island")
---	end
---    if self.forceCaught and not hasPokemonInTeam("Rattata") then
---		if isPCOpen() then
---			if isCurrentPCBoxRefreshed() then
---				if getCurrentPCBoxSize() ~= 0 then
---					for pokemon=1, getCurrentPCBoxSize() do
---						if getPokemonNameFromPC(getCurrentPCBoxId(),pokemon) == "Rattata" then
---							return swapPokemonFromPC(getCurrentPCBoxId(),pokemon,1) 
---						end
---						end
---					end
---					return openPCBox(getCurrentPCBoxId()+1)
---				else
---					log("dd")
---					return
---				end
---			else
---				return usePC()
---			end
---		else
---			return moveToMap("Cinnabar Island")
---	end
---end
 
 function Elite4Johto:VictoryRoadKanto1F()
 	if dialogs.leagueNotDefeated.state then

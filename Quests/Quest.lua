@@ -96,11 +96,17 @@ function Quest:pokemart(exitMapName)
 			"Mart Rustboro City",
 		}
 
+		local specialPokemartsNPCs3 = { -- NPC: 3, 6
+			"Olivine Pokemart",
+		}
+
 		if not isShopOpen() then
 			if sys.tableHasValue(specialPokemartsNPCs1, getMapName()) then
 				return talkToNpcOnCell(3, 4)
 			elseif sys.tableHasValue(specialPokemartsNPCs2, getMapName()) then
 				return talkToNpcOnCell(12, 9)
+			elseif sys.tableHasValue(specialPokemartsNPCs3, getMapName()) then
+				return talkToNpcOnCell(3, 6)
 			elseif getMapName() == "Celadon Mart 2" then
 				return talkToNpcOnCell(4, 8)
 			else
@@ -259,12 +265,6 @@ function Quest:needPokecenter()
 			return true 
 		end
 
-	elseif game.hasPokemonWithName("Metapod") and getPokemonHealthPercent(game.hasPokemonWithName("Metapod")) > 10 and self.name == "Goldenrod City" or
-	game.hasPokemonWithName("Butterfree") and getPokemonHealthPercent(game.hasPokemonWithName("Butterfree")) > 10 and self.name == "Goldenrod City"
-	then
-		sys.debug("quest", "Quest:needPokecenter() == false bc of Metapod quest")
-		return false
-
 	-- else we would spend more time evolving the higher level ones
 	elseif not self:isTrainingOver() then
 		if team.getLowestUsablePkmToLvl(self.level) == nil then
@@ -338,19 +338,14 @@ function Quest:sortInMemory()
 	--setting lowest level pkm as starter
 	local starter = team.getStarter() --getFirstPokemonAlive
 	local lowestUsablePkmToLvl = team.getLowestUsablePkmToLvl(self.level)
-	local lowestAlivePkmToLvl = team.getLowestPkmAlive()
 
 	if self.level == nil or self.level == 1 then -- if level isn't set, assume this
 		lowestUsablePkmToLvl = team.getLowestUsablePkmToLvl(100)
 	end
 		
 
-	if self.name == "Goldenrod City" then -- goldenrod quest, metapod has only 1 move "harden"
-		return swapPokemon(lowestAlivePkmToLvl, starter)
-	else
-		if lowestUsablePkmToLvl and	starter ~= lowestUsablePkmToLvl	then
-			return swapPokemon(lowestUsablePkmToLvl, starter)
-		end
+	if lowestUsablePkmToLvl and	starter ~= lowestUsablePkmToLvl	then
+		return swapPokemon(lowestUsablePkmToLvl, starter)
 	end
 
 	--setting highest level pkm, as last defense wall
@@ -377,7 +372,6 @@ function Quest:checkDiscoverables()
 	local blacklistHeadbuttMaps = {
 		"Route 35",
 		"Route 120",
-
 	}
 
 	if hasItem("Battering Ram") or (game.hasPokemonWithMove("Headbutt") and getPokemonHappiness(team.getFirstPkmWithMove("Headbutt")) >= 150) then
@@ -429,8 +423,7 @@ function Quest:checkDiscoverables()
 		"Jagged Pass",
 		"Petalburg City",
 		"New Mauville",
-
-
+		"Route 40",
 	}
 
 	for i,v in ipairs(getDiscoverableItems()) do
@@ -464,6 +457,7 @@ function Quest:checkDiscoverables()
 	local abandonedPokemonMapBlacklist = {
 		"Oaks Lab",
 		"Olivine City",
+		"Sprout Tower F1", -- Ghastly sucks for leveling
 	}
 
 	for i, discoverablePokemon in ipairs(getDiscoverableAbandonedPokemon()) do
@@ -531,17 +525,13 @@ function Quest:checkNPCInteractions()
 
 	if sys.tableHasValue(mapBlacklistForNPCInteractions, getMapName()) then
 		if isNpcInteractionsEnabled() then
-			if disableNpcInteractions() then
-				sys.debug("NPC INTERACTIONS", "disabled.")
-				return true
-			end
+			sys.debug("NPC INTERACTIONS", "disabled.")
+			return disableNpcInteractions()
 		end
 	else
 		if not isNpcInteractionsEnabled() then
-			if enableNpcInteractions() then
-				sys.debug("NPC INTERACTIONS", "enabled.")
-				return true
-			end
+			sys.debug("NPC INTERACTIONS", "enabled.")
+			return enableNpcInteractions()
 		end
 	end
 end
@@ -599,15 +589,11 @@ function Quest:battle()
 		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
 		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
 	-- special rattata Quest
-	if self.name == "Go to Hoenn" and getOpponentLevel() == 120 then
+	elseif self.name == "Go to Hoenn" and getOpponentLevel() == 120 then
 		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
 		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
 	-- deoxys story quest
 	elseif self.name == "Beat Deoxys" and getOpponentLevel() == 110 then
-		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
-		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
-	-- to sinnoh quest
-	elseif self.name == "To Sinnoh Quest" and getOpponentLevel() == 100 or getOpponentLevel() == 110 or getOpponentLevel() == 120 then
 		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
 		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
 	end
@@ -762,7 +748,7 @@ function Quest:chooseForgetMove(moveName, pokemonIndex) -- Calc the WrostAbility
 			or MoveName == "Surf" 
 			or MoveName == "Rock Smash" 
 			or MoveName == "Dive" 
-			or (MoveName == "Sleep Powder" and not hasItem("Plain Badge"))
+			or (MoveName == "Sleep Powder" and hasItem("Earth Badge") and not hasItem("Plain Badge"))
 			
 			-- good moves below
 			or MoveName == "Ice Beam"
@@ -772,6 +758,7 @@ function Quest:chooseForgetMove(moveName, pokemonIndex) -- Calc the WrostAbility
 			or MoveName == "Earthquake"
 			or MoveName == "Shadow Claw"
 			or MoveName == "Leaf Blade"
+			or MoveName == "Slash"
 
 			-- good moves end
 		then
@@ -784,12 +771,16 @@ function Quest:chooseForgetMove(moveName, pokemonIndex) -- Calc the WrostAbility
 			end
 		end
 	end
-	sys.log("[Learning Move: " .. moveName .. "  -->  Forget Move: " .. ForgetMoveName .. "]")
+	if ForgetMoveName ~= nil then
+		sys.log("[Learning Move: " .. moveName .. "  -->  Forget Move: " .. ForgetMoveName .. "]")
+	end
 	return ForgetMoveName
 end
 
 function Quest:learningMove(moveName, pokemonIndex)
-	return forgetMove(self:chooseForgetMove(moveName, pokemonIndex))
+	if self:chooseForgetMove(moveName, pokemonIndex) ~= nil then
+		return forgetMove(self:chooseForgetMove(moveName, pokemonIndex))
+	end
 end
 
 return Quest

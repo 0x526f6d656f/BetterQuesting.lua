@@ -8,7 +8,6 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'New Bark Town'
 local description = 'Get first Pokemon (Totodile)' --Totodile can Learn Surf and Cut, is perfect for questing
@@ -61,7 +60,7 @@ end
 function StartJohtoQuest:ProfessorElmsLab()
 	if getTeamSize() == 0 then
 		sys.debug("quest", "Going to get Totodile.")
-		return talkToNpcOnCell(10,6) --Totodile can Learn Surf and Cut, is perfect for questing
+		return talkToNpcOnCell(10, 6) --Totodile can Learn Surf and Cut, is perfect for questing
 	else
 		sys.debug("quest", "Going to New Bark Town.")
 		return moveToCell(4, 14)
@@ -69,14 +68,16 @@ function StartJohtoQuest:ProfessorElmsLab()
 end
 
 function StartJohtoQuest:Route29()
-	sys.debug("quest", "Going to Cherrygrove City.")
-	return moveToCell(0, 18)
+	if game.tryTeachMove("Surf","HM03 - Surf") == true then -- teach Totodile Surf right away.
+		sys.debug("quest", "Going to Cherrygrove City.")
+		return moveToCell(0, 18)
+	end
 end
 
 function StartJohtoQuest:CherrygroveCity()
-	if isNpcOnCell(52,7) then
+	if isNpcOnCell(52, 7) then
 		sys.debug("quest", "Going to get a few items from an NPC.")
-		return talkToNpcOnCell(52,7) --Get 5 Pokeballs + 5 Potions + 10000 Money
+		return talkToNpcOnCell(52, 7) --Get 5 Pokeballs + 5 Potions + 10000 Money
 	elseif self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Cherrygrove City" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(51, 6)

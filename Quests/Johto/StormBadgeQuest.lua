@@ -7,11 +7,15 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
 
+local luaPokemonData = require "Data/luaPokemonData"
+
+
 local name		  = 'Storm Badge Quest'
-local description = 'Will exp to lv 44 and earn the 5th badge'
+local description = 'Will exp to lv 49 and earn the 5th badge'
 local level = 49
 
 local dialogs = {
@@ -24,7 +28,7 @@ local StormBadgeQuest = Quest:new()
 
 function StormBadgeQuest:new()
 	o = Quest.new(StormBadgeQuest, name, description, level, dialogs)
-	o.pokemonId = 1
+	o.checkedForBestPokemon = false
 
 	return o
 end
@@ -63,16 +67,6 @@ function StormBadgeQuest:PokecenterEcruteak()
 	self:pokecenter("Ecruteak City")
 end
 
-function StormBadgeQuest:OlivinePokecenter()
-	self:pokecenter("Olivine City")
-end
-
-function StormBadgeQuest:PokecenterCianwood()
-	self:pokecenter("Cianwood City")
-end
-
-
-
 function StormBadgeQuest:EcruteakStopHouse1()
 	sys.debug("quest", "Going to Olivine City.")
 	return moveToCell(0, 7)
@@ -101,6 +95,36 @@ function StormBadgeQuest:OlivineCity()
 	end
 end
 
+function StormBadgeQuest:OlivinePokecenter()
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		self:pokecenter("Olivine City")
+	end
+end
+
 function StormBadgeQuest:GlitterLighthouse1F()
 	if dialogs.phare.state then 
 		sys.debug("quest", "Going back to Olivine City.")
@@ -126,7 +150,7 @@ function StormBadgeQuest:GlitterLighthouse2F()
 			return moveToCell(12, 4)
 		else
 			sys.debug("quest", "Going to Lighthouse Top.")
-			return moveToCell(3,5)
+			return moveToCell(3, 5)
 		end
 	end
 end
@@ -154,35 +178,29 @@ end
 function StormBadgeQuest:GlitterLighthouse4F()
 	if dialogs.phare.state then 
 		sys.debug("quest", "Going back to Olivine City.")
-		return moveToCell(5,4)
+		return moveToCell(5, 4)
 	else
 		sys.debug("quest", "Going to Lighthouse Top.")
-		return moveToCell(11,6)
+		return moveToCell(11, 6)
 	end
 end
 
 function StormBadgeQuest:GlitterLighthouse5F()
 	if dialogs.phare.state then 
 		sys.debug("quest", "Going back to Olivine City.")
-		moveToCell(11,11)
+		return moveToCell(11, 11)
 	elseif isNpcOnCell(11, 9) then
 		sys.debug("quest", "Going to talk to NPC.")
-		return talkToNpcOnCell(11,9)
+		return talkToNpcOnCell(11, 9)
 	end
 end
 
 function StormBadgeQuest:Route40()
-	if not game.hasPokemonWithMove("Surf") then
-		if self.pokemonId <= getTeamSize() then
-			useItemOnPokemon("HM03 - Surf", self.pokemonId)
-			log("Pokemon: " .. self.pokemonId .. " Try Learn Surf")
-			self.pokemonId = self.pokemonId + 1
-		else
-			fatal("No pokemon in this team can learn Surf")
-		end
-	else
+	if game.tryTeachMove("Surf", "HM03 - Surf") then
 		sys.debug("quest", "Going to Cianwood City.")
 		return moveToCell(16, 47)
+	else
+		fatal("Tell @Atem on GitHub to fix me: https://github.com/atemerino/BetterQuesting.lua/issues/.")
 	end
 end
 
@@ -204,9 +222,13 @@ function StormBadgeQuest:CianwoodCity()
 	end
 end
 
+function StormBadgeQuest:PokecenterCianwood()
+	self:pokecenter("Cianwood City")
+end
+
 function StormBadgeQuest:CianwoodCityGym()
 	sys.debug("quest", "Going to get 5th badge.")
-	return talkToNpcOnCell(32,15)
+	return talkToNpcOnCell(32, 15)
 end
 
 return StormBadgeQuest

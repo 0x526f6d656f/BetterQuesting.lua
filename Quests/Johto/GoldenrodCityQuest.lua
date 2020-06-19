@@ -6,10 +6,11 @@
 
 
 local sys    = require "Libs/syslib"
---local pc     = require "Libs/pclib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Goldenrod City'
 local description = " Complete Guard's Quest"
@@ -53,7 +54,7 @@ local GoldenrodCityQuest = Quest:new()
 
 function GoldenrodCityQuest:new()
 	local o = Quest.new(GoldenrodCityQuest, name, description, level, dialogs)
-	o.need_metapod = false
+	o.need_caterpie = false
 	o.gavine_done = false
 	o.checkCrate1 = false
 	o.checkCrate2 = false
@@ -68,7 +69,7 @@ end
 function GoldenrodCityQuest:isDoable()
 	if self:hasMap() and not hasItem("Rain Badge") then
 		if getMapName() == "Goldenrod City" then
-			return isNpcOnCell(48,34)
+			return isNpcOnCell(48, 34)
 		else
 			return true
 		end
@@ -77,52 +78,55 @@ function GoldenrodCityQuest:isDoable()
 end
 
 function GoldenrodCityQuest:isDone()
-	if getMapName() == "Goldenrod City" and not isNpcOnCell(50,34) or (getMapName() == "Ilex Forest") then
+	if getMapName() == "Goldenrod City" and not isNpcOnCell(50, 34) or (getMapName() == "Ilex Forest") then
 		return true
 	end
 	return false
+end
 
+function GoldenrodCityQuest:getWeakestTeamMember()
+	local weakestPokemon = 1 -- assume first in team is weakest
+
+	for i = 1, getTeamSize() do
+		if luaPokemonData[getPokemonName(i)]["TotalStats"] < luaPokemonData[getPokemonName(weakestPokemon)]["TotalStats"] then
+			weakestPokemon = i
+		end
+	end
+
+	return weakestPokemon
 end
 
 function GoldenrodCityQuest:PokecenterGoldenrod()
-	if self.need_metapod and (not hasPokemonInTeam("Metapod") and not hasPokemonInTeam("Butterfree")) then
-		log("Metapod/Butterfree with Johto Region NOT FOUND, Next quest: llexForestQuest.lua")
-		return moveToCell(10, 20)
-		--Get Metapod From PC
-
+	if self.need_caterpie then
+		if hasPokemonInTeam("Caterpie") or hasPokemonInTeam("Metapod") or hasPokemonInTeam("Butterfree") then
+			self.need_caterpie = false
+		else
+			log("Caterpie/Metapod/Butterfree with Johto Region NOT FOUND, Next quest: llexForestQuest.lua")
+			return self:pokecenter("Goldenrod City")
+		end
+		
+	-- Get Caterpie From PC
 	elseif hasItem("Basement Key") and not hasItem("SquirtBottle") and dialogs.guardQuestPart2.state then
-		if not hasPokemonInTeam("Metapod") and not hasPokemonInTeam("Butterfree")then
+		if not hasPokemonInTeam("Caterpie") or not hasPokemonInTeam("Metapod") or not hasPokemonInTeam("Butterfree") then
 			if isPCOpen() then
 				if isCurrentPCBoxRefreshed() then
 					if getCurrentPCBoxSize() ~= 0 then
-						for pokemon=1, getCurrentPCBoxSize() do
-							if getPokemonNameFromPC(getCurrentPCBoxId(),pokemon) == "Metapod" and getPokemonRegionFromPC(getCurrentPCBoxId(),pokemon) == "Johto" then
-								if game.hasPokemonWithName("Gastly") then
-									log("LOG: Metapod Found on BOX: " .. getCurrentPCBoxId() .."  Slot: ".. pokemon .. "  Swapping with Gastly on Slot: " .. game.hasPokemonWithName("Gastly"))
-									return swapPokemonFromPC(getCurrentPCBoxId(),pokemon,game.hasPokemonWithName("Gastly")) --swap with gastly useless against Gavin Director
-								elseif game.hasPokemonWithName("Haunter") then -- if gastly evolved before getting to goldenrod
-									log("LOG: Metapod Found on BOX: " .. getCurrentPCBoxId() .."  Slot: ".. pokemon .. "  Swapping with Haunter on Slot: " .. game.hasPokemonWithName("Haunter"))
-									return swapPokemonFromPC(getCurrentPCBoxId(),pokemon,game.hasPokemonWithName("Haunter")) --swap with haunter useless against Gavin Director
-								else
-									log("LOG: Metapod Found on BOX: " .. getCurrentPCBoxId() .."  Slot: ".. pokemon .. "  Swapping with pokemon in team N: " .. getTeamSize())
-									return swapPokemonFromPC(getCurrentPCBoxId(),pokemon,getTeamSize()) --swap the pokemon with last pokemon in team
-								end
+						for pokemon = 1, getCurrentPCBoxSize() do
+							if getPokemonNameFromPC(getCurrentPCBoxId(), pokemon) == "Caterpie" and getPokemonRegionFromPC(getCurrentPCBoxId(), pokemon) == "Johto" then
+								log(string.format("LOG: %s found in Box #%i. Swapping with Team Member %s", getPokemonNameFromPC(getCurrentPCBoxId(), pokemon), getCurrentPCBoxId(), getPokemonName(self:getWeakestTeamMember())))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pokemon, self:getWeakestTeamMember()) --swap the pokemon with the weakest pokemon in team
 							end
 						end
-						return openPCBox(getCurrentPCBoxId()+1)
+						return openPCBox(getCurrentPCBoxId() + 1)
 					else
-						self.need_metapod = true
-						return
+						self.need_caterpie = true
 					end
-				else
-					return
 				end
 			else
 				return usePC()
 			end
-			--END get Metapod or Butterfree
+	--END get Metapod or Butterfree
 		else
-			-- have Metapod or Butterfree
 			self:pokecenter("Goldenrod City")
 		end
 	else
@@ -135,13 +139,9 @@ function GoldenrodCityQuest:GoldenrodCity()
 		sys.debug("Quest", "Going to heal Pokemon.")
 		return moveToCell(64, 47)
 
-	elseif self.need_metapod and (not hasPokemonInTeam("Metapod") and not hasPokemonInTeam("Butterfree"))then
-		sys.debug("quest", "Going to catch Metapod.")
+	elseif self.need_caterpie then
+		sys.debug("quest", "Going to catch Caterpie.")
 		return moveToCell(68, 62)
-
-	elseif hasItem("Bike Voucher") then
-		sys.debug("quest", "Going to buy a bike.")
-		return moveToCell(81, 51)
 
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
@@ -153,12 +153,23 @@ function GoldenrodCityQuest:GoldenrodCity()
 
 	elseif hasItem("Basement Key") and not hasItem("SquirtBottle") and dialogs.guardQuestPart2.state then --get Metapod on PC and start leveling
 		if not game.hasPokemonWithMove("Sleep Powder") then
-			if hasPokemonInTeam("Metapod") then
-				sys.debug("quest", "Going to train Metapod until Sleep Powder.")
-				return moveToCell(67, 62) -- route 34
+			if hasPokemonInTeam("Caterpie") or hasPokemonInTeam("Metapod") or hasPokemonInTeam("Butterfree") then
+				if getPokemonLevel(game.hasPokemonWithName("Butterfree")) > 12 then
+					sys.debug("quest", "Going to teach Butterfree Sleep Power with Move Relearner.")
+					if isRelearningMoves() then
+						return relearnMove("Sleep Powder")
+					else
+						pushDialogAnswer(1)
+						pushDialogAnswer(game.hasPokemonWithName("Butterfree"))
+						return talkToNpcOnCell(66, 40)
+					end
+				else
+					sys.debug("quest", "Going to train Caterpie until Sleep Powder.")
+					return moveToCell(67, 62) -- route 34
+				end
 
 			else
-				sys.debug("quest", "Going to check if we have a Metapod in box.")
+				sys.debug("quest", "Going to check if we have a Caterpie in box.")
 				return moveToCell(64, 47) -- pokecenter goldenrod
 
 			end
@@ -186,18 +197,42 @@ function GoldenrodCityQuest:GoldenrodCity()
 		else
 			sys.debug("quest", "Going to talk to Sergeant Raul.")
 			pushDialogAnswer(2)
-			return talkToNpcOnCell(48,34)
+			return talkToNpcOnCell(48, 34)
 
 		end
-	else
 	end
 end
 
-function GoldenrodCityQuest:GoldenrodCityBikeShop()
-	if hasItem("Bike Voucher") then
-		return talkToNpcOnCell(11,3)
+function GoldenrodCityQuest:Route34()
+	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Goldenrod" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(13, 0)
+
+	elseif self.need_caterpie then
+		sys.debug("quest", "Going to catch Caterpie.")
+		return moveToCell(24, 64)
+
+	elseif not self:isTrainingOver() then
+		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
+		return moveToGrass()
+
 	else
-		return moveToCell(6, 12)
+		sys.debug("quest", "Going back to Goldenrod City.")
+		return moveToCell(13, 0)
+
+	end
+end
+
+function GoldenrodCityQuest:Route34StopHouse()
+	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Goldenrod" then
+		sys.debug("quest", "Going to heal Pokemon.")
+		return moveToCell(3, 2)
+	elseif self.need_caterpie then
+		sys.debug("quest", "Going to catch Caterpie.")
+		return moveToCell(3, 12)
+	else
+		sys.debug("quest", "Going back to Goldenrod City.")
+		return moveToCell(3, 2)
 	end
 end
 
@@ -238,55 +273,6 @@ function GoldenrodCityQuest:GoldenrodCityHouse2()
 	else
 		sys.debug("quest", "Going back to Goldenrod City.")
 		return moveToCell(5, 10)
-	end
-end
-
-function GoldenrodCityQuest:Route34()
-	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Goldenrod" then
-		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(13, 0)
-
-	elseif self.need_metapod and (not hasPokemonInTeam("Metapod") and not hasPokemonInTeam("Butterfree"))then
-		sys.debug("quest", "Going to catch Metapod.")
-		return moveToCell(24, 64)
-
-	elseif not self:isTrainingOver() then
-		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		return moveToGrass()
-
-	--elseif hasItem("Basement Key") and not hasItem("SquirtBottle") and dialogs.guardQuestPart2.state then --get Metapod on PC and start leveling
-	--	if not game.hasPokemonWithMove("Sleep Powder") then
-	--		if hasPokemonInTeam("Metapod") or hasPokemonInTeam("Butterfree") then
-	--			if game.getTotalUsablePokemonCount() < getTeamSize() then
-	--				return moveToMap("Goldenrod City") --metapod is low level so, it will die first every time
-	--
-	--			else
-	--				return moveToGrass()
-	--
-	--			end
-	--		else
-	--			return moveToMap("Goldenrod City")
-	--
-	--		end
-	--	else
-	--		return moveToMap("Goldenrod City")
-	--
-	--	end
-	else
-		sys.debug("quest", "Going back to Goldenrod City.")
-		return moveToCell(13, 0)
-
-	end
-end
-
-function GoldenrodCityQuest:Route34StopHouse()
-	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Goldenrod" then
-		return moveToMap("Route 34")
-	elseif self.need_metapod and (not hasPokemonInTeam("Metapod") and not hasPokemonInTeam("Butterfree"))then
-		self.need_metapod = false
-		return moveToMap("Ilex Forest")
-	else
-		return moveToMap("Route 34")
 	end
 end
 
@@ -352,9 +338,7 @@ function GoldenrodCityQuest:GoldenrodMartB1F()
 	if hasItem("Basement Key") and not hasItem("SquirtBottle") and dialogs.guardQuestPart2.state and game.hasPokemonWithMove("Sleep Powder") then
 		if isNpcOnCell(13,8) then
 			pushDialogAnswer(2)
-			if  game.hasPokemonWithName("Metapod")  then
-				pushDialogAnswer(game.hasPokemonWithName("Metapod"))
-			elseif game.hasPokemonWithName("Butterfree")  then
+			if game.hasPokemonWithName("Butterfree")  then
 				pushDialogAnswer(game.hasPokemonWithName("Butterfree"))
 			else
 				fatal("Error . - No Metapod or Butterfree in this team")
@@ -369,7 +353,6 @@ function GoldenrodCityQuest:GoldenrodMartB1F()
 		sys.debug("quest", "Going back to Goldenrod City.")
 		return moveToCell(8, 5)
 	end
-
 end
 
 function GoldenrodCityQuest:UndergroundWarehouse()
@@ -496,18 +479,6 @@ function GoldenrodCityQuest:GoldenrodUndergroundBasement()
 	else
 		fatal("Error ON PUZZLE RESOLUTION  GoldenrodCityQuest:GoldenrodUndergroundBasement()")
 	end
-end
-
-function GoldenrodCityQuest:MapName()
-
-end
-
-function GoldenrodCityQuest:MapName()
-
-end
-
-function GoldenrodCityQuest:MapName()
-
 end
 
 return GoldenrodCityQuest

@@ -39,20 +39,20 @@ local GoToJohtoQuest				= require('Quests/Kanto/GoToJohtoQuest')
 
 
 --Johto
--- local StartJohtoQuest				= require('Quests/Johto/StartJohtoQuest')
--- local ZephyrBadgeQuest				= require('Quests/Johto/ZephyrBadgeQuest')
--- local SproutTowerQuest				= require('Quests/Johto/SproutTowerQuest')
--- local HiveBadgeQuest				= require('Quests/Johto/HiveBadgeQuest')
--- local IlexForestQuest			= require('Quests/Johto/IlexForestQuest')
--- local GoldenrodCityQuest			= require('Quests/Johto/GoldenrodCityQuest')
--- local PlainBadgeQuest			= require('Quests/Johto/PlainBadgeQuest')
--- local FogBadgeQuest				= require('Quests/Johto/FogBadgeQuest')
--- local StormBadgeQuest			= require('Quests/Johto/StormBadgeQuest')
--- local MineralBadgeQuest			= require('Quests/Johto/MineralBadgeQuest')
--- local GlacierBadgeQuest			= require('Quests/Johto/GlacierBadgeQuest')
--- local RisingBadgeQuest			= require('Quests/Johto/RisingBadgeQuest')
--- local Elite4Johto				= require('Quests/Johto/Elite4Johto')
--- local GoToHoennQuest			= require('Quests/Johto/GoToHoennQuest')
+local StartJohtoQuest				= require('Quests/Johto/StartJohtoQuest')
+local ZephyrBadgeQuest				= require('Quests/Johto/ZephyrBadgeQuest')
+local SproutTowerQuest				= require('Quests/Johto/SproutTowerQuest')
+local HiveBadgeQuest				= require('Quests/Johto/HiveBadgeQuest')
+local IlexForestQuest				= require('Quests/Johto/IlexForestQuest')
+local GoldenrodCityQuest			= require('Quests/Johto/GoldenrodCityQuest')
+local PlainBadgeQuest				= require('Quests/Johto/PlainBadgeQuest')
+local FogBadgeQuest					= require('Quests/Johto/FogBadgeQuest')
+local StormBadgeQuest				= require('Quests/Johto/StormBadgeQuest')
+local MineralBadgeQuest				= require('Quests/Johto/MineralBadgeQuest')
+local GlacierBadgeQuest				= require('Quests/Johto/GlacierBadgeQuest')
+local RisingBadgeQuest				= require('Quests/Johto/RisingBadgeQuest')
+local Elite4Johto					= require('Quests/Johto/Elite4Johto')
+local GoToHoennQuest			= require('Quests/Johto/GoToHoennQuest')
 
 --Hoenn
 -- local FromLittlerootToWoodsQuest = require('Quests/Hoenn/FromLittlerootToWoodsQuest')
@@ -106,20 +106,20 @@ local quests = {
 	GoToJohtoQuest:new(),
 	
 	-- Johto Quests 
-	-- StartJohtoQuest:new(),
-	-- ZephyrBadgeQuest:new(),
-	-- SproutTowerQuest:new(),
-	-- HiveBadgeQuest:new(),
-	-- IlexForestQuest:new(),
-	-- GoldenrodCityQuest:new(),
-	-- PlainBadgeQuest:new(),
-	-- FogBadgeQuest:new(),
-	-- StormBadgeQuest:new(),
-	-- MineralBadgeQuest:new(),
-	-- GlacierBadgeQuest:new(),
-	-- RisingBadgeQuest:new(),
-	-- Elite4Johto:new(),
-	-- GoToHoennQuest:new(),
+	StartJohtoQuest:new(),
+	ZephyrBadgeQuest:new(),
+	SproutTowerQuest:new(),
+	HiveBadgeQuest:new(),
+	IlexForestQuest:new(),
+	GoldenrodCityQuest:new(),
+	PlainBadgeQuest:new(),
+	FogBadgeQuest:new(),
+	StormBadgeQuest:new(),
+	MineralBadgeQuest:new(),
+	GlacierBadgeQuest:new(),
+	RisingBadgeQuest:new(),
+	Elite4Johto:new(),
+	GoToHoennQuest:new(),
 	
 	--HoennQuest
 	-- FromLittlerootToWoodsQuest:new(),

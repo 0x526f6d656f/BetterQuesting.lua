@@ -8,10 +8,9 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'Azalea Town'
-local description = ' Hive Badge'
+local description = 'Hive Badge'
 local level = 22
 
 local HiveBadgeQuest = Quest:new()
@@ -54,7 +53,7 @@ function HiveBadgeQuest:AzaleaTown()
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToCell(60, 27)
 
-	elseif isNpcOnCell(19,28) then	
+	elseif isNpcOnCell(19, 28) then	
 		sys.debug("quest", "Going to Slowpoke Well.")
 		return moveToCell(46, 10)
 
@@ -62,9 +61,9 @@ function HiveBadgeQuest:AzaleaTown()
 		sys.debug("quest", "Going to get 2nd badge.")
 		return moveToCell(19, 27)
 
-	elseif isNpcOnCell(5,12) then	
+	elseif isNpcOnCell(5, 12) then	
 		sys.debug("quest", "Going to talk to Trainer Yellow.")
-		return talkToNpcOnCell(5,12)
+		return talkToNpcOnCell(5, 12)
 
 	else
 		sys.debug("quest", "Going to Ilex Forest.")
@@ -77,9 +76,8 @@ function HiveBadgeQuest:Route33()
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(0, 21)
 	elseif not self:isTrainingOver() then
-		if moveToRectangle(6, 23, 21, 27) then
-			return sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		end
+		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
+		return moveToRectangle(6, 23, 21, 27)
 	else
 		sys.debug("quest", "Going back to Azalea Town.")
 		return moveToCell(0, 21)
@@ -92,9 +90,9 @@ function HiveBadgeQuest:IlexForestStopHouse()
 end
 
 function HiveBadgeQuest:SlowpokeWell()
-	if isNpcOnCell(12,26) then
+	if isNpcOnCell(12, 26) then
 		sys.debug("quest", "Going to talk to the NPC.")
-		return talkToNpcOnCell(12,26)
+		return talkToNpcOnCell(12, 26)
 	else
 		sys.debug("quest", "Going back to Azalea Town.")
 		return moveToCell(41, 39)
@@ -104,7 +102,7 @@ end
 function HiveBadgeQuest:AzaleaTownGym()
 	if not hasItem("Hive Badge") then
 		sys.debug("quest", "Going to get 2nd badge.")
-		return talkToNpcOnCell(15,3)
+		return talkToNpcOnCell(15, 3)
 	else
 		sys.debug("quest", "Going back to Azalea Town.")
 		return moveToCell(14, 32)

@@ -4,21 +4,23 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @WiWi__33[NetPaPa]
 
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Mineral Badge Quest'
 local description = 'Will Exp to lv 55 and earn the 6th Badge'
 local level = 55
 
 local dialogs = {
-	phare = Dialog:new({ 
+	potionDelivered = Dialog:new({ 
 		"see you in the gym"
 	}),
-	potion = Dialog:new({ 
+	potionReceived = Dialog:new({ 
 		"How are you today deary?"
 	})
 }
@@ -26,7 +28,10 @@ local dialogs = {
 local MineralBadgeQuest = Quest:new()
 
 function MineralBadgeQuest:new()
-	return Quest.new(MineralBadgeQuest, name, description, level, dialogs)
+	local o = Quest.new(MineralBadgeQuest, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
+	
+	return o
 end
 
 function MineralBadgeQuest:isDoable()
@@ -44,17 +49,62 @@ function MineralBadgeQuest:isDone()
 	end
 end
 
+function MineralBadgeQuest:CianwoodCityGym()
+	sys.debug("quest", "Going back to Olivine City.")
+	return moveToCell(32, 40)
+end
+
 function MineralBadgeQuest:CianwoodCity()
 	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Cianwood" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(24, 47)
-	elseif not dialogs.potion.state then 
+	elseif not dialogs.potionReceived.state then 
 		sys.debug("quest", "Going to get SecretPotion.")
 		return moveToCell(15, 48)
 	else
 		sys.debug("quest", "Going back to Olivine City.")
 		return moveToCell(31, 33)
 	end 
+end
+
+function MineralBadgeQuest:PokecenterCianwood()
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Johto"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		self:pokecenter("Cianwood City")
+	end
+end
+
+function MineralBadgeQuest:CianwoodShop()
+	if not dialogs.potionReceived.state then
+		sys.debug("quest", "Going to get SecretPotion.")
+		return talkToNpcOnCell(2, 2)
+	else
+		sys.debug("quest", "Going back to Olivine City.")
+		return moveToCell(7, 10)
+	end
 end
 
 function MineralBadgeQuest:Route41()
@@ -84,7 +134,7 @@ function MineralBadgeQuest:OlivineCity()
 	elseif self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Olivine Pokecenter" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(13, 32)
-	elseif not dialogs.phare.state then 
+	elseif not dialogs.potionDelivered.state then 
 		sys.debug("quest", "Going to Lighthouse Top.")
 		return moveToCell(42, 34)
 	elseif not self:isTrainingOver() then 
@@ -104,90 +154,85 @@ function MineralBadgeQuest:OlivineHouse1()
 	end
 end
 
-function MineralBadgeQuest:GlitterLighthouse1F() -- todo
-	if dialogs.phare.state then 
-		return moveToCell(8,14)
-	else
-		return moveToCell(9,5)
-	end
-end
-
-function MineralBadgeQuest:GlitterLighthouse2F() --todo
-	if dialogs.phare.state then 
-		if game.inRectangle(10,4,15,7) then
-			return moveToCell(13,7)
-		elseif game.inRectangle(3,4,9,13) then
-			return moveToCell(9,12)
-		end
-	else
-		if game.inRectangle(10,4,15,7) then
-			return moveToCell(12,4)
-		elseif game.inRectangle(3,4,9,13) then
-			return moveToCell(3,5)
-		end
-	end
-end
-
-function MineralBadgeQuest:GlitterLighthouse3F() --todo
-	if dialogs.phare.state then 
-		if game.inRectangle(9,3,13,12) then
-			return moveToCell(12,5)
-		elseif game.inRectangle(1,6,6,3) then
-			return moveToCell(3,5)
-		end
-	else 
-		if game.inRectangle(9,3,13,12) then
-			return moveToCell(9,12)
-		elseif game.inRectangle(1,6,6,3) then
-			return moveToCell(5,4)
-		end
-	end
-end
-
-function MineralBadgeQuest:GlitterLighthouse4F() --todo
-	if dialogs.phare.state then 
-		return moveToCell(5,4)
-	else
-		return moveToCell(11,6)
-	end
-end
-
-function MineralBadgeQuest:GlitterLighthouse5F() --todo
-	if dialogs.phare.state then 
-		return moveToCell(11,11)
-	elseif isNpcOnCell(11,9) then
-		return talkToNpcOnCell(11,9)
-	elseif not isNpcOnCell(11,9) then
-		return moveToCell(11,11)
-	end
-end
-
-function MineralBadgeQuest:CianwoodShop()
-	if not dialogs.potion.state then 
-		sys.debug("quest", "Going to get SecretPotion.")
-		return talkToNpcOnCell(2,2)
-	else
-		sys.debug("quest", "Going back to Olivine City.")
-		return moveToCell(7, 10)
-	end
-end
-
 function MineralBadgeQuest:OlivinePokecenter()
 	self:pokecenter("Olivine City")
 end
 
-function MineralBadgeQuest:PokecenterCianwood()
-	self:pokecenter("Cianwood City")
-end
-
 function MineralBadgeQuest:OlivineCityGym()
 	sys.debug("quest", "Going to get 6th badge.")
-	return talkToNpcOnCell(6,3)
+	return talkToNpcOnCell(6, 3)
 end
 
-function MineralBadgeQuest:CianwoodCityGym()
-	sys.debug("quest", "Going back to Olivine City.")
-	return moveToCell(32, 40)
+function MineralBadgeQuest:GlitterLighthouse1F()
+	if dialogs.potionDelivered.state then 
+		sys.debug("quest", "Going back to Olivine City.")
+		return moveToCell(8, 14)
+	else
+		sys.debug("quest", "Going to deliver the Secret Potion.")
+		return moveToCell(9, 5)
+	end
+end
+
+function MineralBadgeQuest:GlitterLighthouse2F()
+	if dialogs.potionDelivered.state then 
+		if game.inRectangle(10, 3, 15, 7) then
+			sys.debug("quest", "Going back to Olivine City.")
+			return moveToCell(13, 7)
+		else
+			sys.debug("quest", "Going back to Olivine City.")
+			return moveToCell(9, 12)
+		end
+	else
+		if game.inRectangle(10, 3, 15, 7) then
+			sys.debug("quest", "Going to deliver the Secret Potion.")
+			return moveToCell(12, 4)
+		else
+			sys.debug("quest", "Going to deliver the Secret Potion.")
+			return moveToCell(3, 5)
+		end
+	end
+end
+
+function MineralBadgeQuest:GlitterLighthouse3F()
+	if dialogs.potionDelivered.state then 
+		if game.inRectangle(1, 2, 6, 6) then
+			sys.debug("quest", "Going back to Olivine City.")
+			return moveToCell(3, 5)
+		else
+			sys.debug("quest", "Going back to Olivine City.")
+			return moveToCell(12, 5)
+		end
+	else 
+		if game.inRectangle(1, 2, 6, 6) then
+			sys.debug("quest", "Going to deliver the Secret Potion.")
+			return moveToCell(5, 4)
+		else
+			sys.debug("quest", "Going to deliver the Secret Potion.")
+			return moveToCell(9, 12)
+		end
+	end
+end
+
+function MineralBadgeQuest:GlitterLighthouse4F()
+	if dialogs.potionDelivered.state then 
+		sys.debug("quest", "Going back to Olivine City.")
+		return moveToCell(5, 4)
+	else
+		sys.debug("quest", "Going to deliver the Secret Potion.")
+		return moveToCell(11, 6)
+	end
+end
+
+function MineralBadgeQuest:GlitterLighthouse5F()
+	if dialogs.potionDelivered.state then
+		sys.debug("quest", "Going back to Olivine City.")
+		return moveToCell(11, 11)
+	elseif isNpcOnCell(11, 9) then
+		sys.debug("quest", "Going to deliver the Secret Potion.")
+		return talkToNpcOnCell(11, 9)
+	else
+		dialogs.potionDelivered.state = true
+	end
 end
 
 return MineralBadgeQuest

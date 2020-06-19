@@ -4,14 +4,12 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @Rympex
 
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'Plain Badge Quest'
-local description = ' Plain Badge'
+local description = 'Plain Badge'
 
 local PlainBadgeQuest = Quest:new()
 
@@ -27,7 +25,7 @@ function PlainBadgeQuest:isDoable()
 end
 
 function PlainBadgeQuest:isDone()
-	if hasItem("Plain Badge") and getMapName() == "Goldenrod City Gym" then
+	if hasItem("Plain Badge") then
 		return true
 	else
 		return false
@@ -43,11 +41,8 @@ function PlainBadgeQuest:GoldenrodCity()
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(64, 47)
 
-    --elseif isNpcOnCell(50,34) then
-    --    talkToNpcOnCell(50,34)
-
 	elseif not hasItem("Plain Badge") then
-		sys.debug("quest", "Going to get 2nd badge.")
+		sys.debug("quest", "Going to get 3rd badge.")
 		return moveToCell(75, 20)
 	else
 		sys.debug("quest", "Going to Route 35 Stop House")
@@ -56,8 +51,8 @@ function PlainBadgeQuest:GoldenrodCity()
 end
 
 function PlainBadgeQuest:GoldenrodCityGym()
-	sys.debug("Going to fight Whitney for 2nd badge.")
-	return talkToNpcOnCell(10,3)
+	sys.debug("quest", "Going to fight Whitney for 2nd badge.")
+	return talkToNpcOnCell(10, 3)
 end
 
 return PlainBadgeQuest
