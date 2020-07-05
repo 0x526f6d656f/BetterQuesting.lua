@@ -23,25 +23,20 @@ local dialogs = {
 
 local KnuckleBadgeQuest  = Quest:new()
 
-
 function KnuckleBadgeQuest:new()
 	return Quest.new(KnuckleBadgeQuest , name, description, level, dialogs)
 end
 
-
 function KnuckleBadgeQuest:isDoable()
 	if hasItem("Stone Badge") and self:hasMap() and not hasItem("Devon Goods") and not hasItem("Dynamo Badge") then
-	return true
+		return true
 	end
 	return false
 end
 
 function KnuckleBadgeQuest:isDone()
-		return hasItem("Knuckle Badge") and  hasItem("Devon Goods")
+	return hasItem("Knuckle Badge") and hasItem("Devon Goods")
 end 
-
-
-
 
 function KnuckleBadgeQuest:PetalburgWoods()
 	if not hasItem("Knuckle Badge") then
@@ -74,10 +69,8 @@ function KnuckleBadgeQuest:Route104()
 end
 
 function KnuckleBadgeQuest:Route104SailorHouse()
-	if isNpcOnCell(11, 6) then
-		sys.debug("quest", "Going to get 2nd badge.")
-		return talkToNpcOnCell(11, 6)
-	end
+	sys.debug("quest", "Going to get 2nd badge.")
+	return talkToNpcOnCell(11, 6)
 end
 
 function KnuckleBadgeQuest:DewfordTown()

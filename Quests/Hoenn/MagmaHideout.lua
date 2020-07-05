@@ -8,9 +8,8 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
-local name		  = 'The Magma HideOut '
+local name		  = 'The Magma HideOut'
 local description = 'Clear the Magma Hideout and give the Red Orb'
 
 local MagmaHideOut = Quest:new()
@@ -131,19 +130,16 @@ end
 function MagmaHideOut:MagmaHideout1F()
 	sys.debug("quest", "Going to Magma Hideout.")
 	return moveToCell(23, 28)
-	--moveToMap("Magma Hideout 2F1R")
 end
 
 function MagmaHideOut:MagmaHideout2F1R()
 	sys.debug("quest", "Going to Magma Hideout.")
 	return moveToCell(17, 37)
-	--moveToMap("Magma Hideout 3F1R")
 end
 
 function MagmaHideOut:MagmaHideout3F1R()
 	sys.debug("quest", "Going to Magma Hideout.")
 	return moveToCell(11, 20)
-	--moveToMap("Magma Hideout 4F")
 end
 
 function MagmaHideOut:MagmaHideout4F() -- groudon: 19, 29

@@ -296,6 +296,29 @@ function Elite4Johto:IndigoPlateauCenterJohto()
 			sys.debug("quest", "Going to heal Pokemon.")
 			self:pokecenter("Indigo Plateau Center Johto")
 
+		elseif not self.checkedForBestPokemon then
+			if isPCOpen() then
+				if isCurrentPCBoxRefreshed() then
+					if getCurrentPCBoxSize() ~= 0 then
+						log("Current Box: " .. getCurrentPCBoxId())
+						log("Box Size: " .. getCurrentPCBoxSize())
+						for teamPokemonIndex = 1, getTeamSize() do
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox()), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox())]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBox(), teamPokemonIndex)
+							end
+						end
+						return openPCBox(getCurrentPCBoxId() + 1)
+					else
+						sys.debug("quest", "Checked for best Pokemon from PC.")
+						self.checkedForBestPokemon = true
+					end
+				end
+			else
+				sys.debug("quest", "Going to check for better Pokemon in boxes.")
+				return usePC()
+			end
+
 		elseif not self:isTrainingOver() then
 			sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 			return moveToCell(10, 28)

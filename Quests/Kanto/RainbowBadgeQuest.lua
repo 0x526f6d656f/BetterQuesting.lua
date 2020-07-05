@@ -10,6 +10,9 @@ local dialogs = {
 	martElevatorFloor1 = Dialog:new({ 
 		"the first floor"
 	}),
+	martElevatorFloor4 = Dialog:new({ 
+		"the fourth floor"
+	}),
 	martElevatorFloor5 = Dialog:new({ 
 		"the fifth floor"
 	})
@@ -151,6 +154,14 @@ function RainbowBadgeQuest:CeladonMartElevator()
 			dialogs.martElevatorFloor5.state = false
 			return moveToCell(2, 5)
 		end
+	elseif not hasItem("Fire Stone") or not hasItem("Leaf Stone") then
+		if not dialogs.martElevatorFloor4.state then
+			pushDialogAnswer(4)
+			return talkToNpcOnCell(1, 1)
+		else
+			dialogs.martElevatorFloor4.state = false
+			return moveToCell(2, 5)
+		end
 	else
 		if not dialogs.martElevatorFloor1.state then
 			pushDialogAnswer(1)
@@ -159,6 +170,28 @@ function RainbowBadgeQuest:CeladonMartElevator()
 			dialogs.martElevatorFloor1.state = false
 			return moveToCell(2, 5)
 		end
+	end
+end
+
+function RainbowBadgeQuest:CeladonMart4()
+	if not hasItem("Fire Stone") then
+		if not isShopOpen() then
+			return talkToNpcOnCell(1, 13)
+		else
+			if getMoney() > 3500 then
+				return buyItem("Fire Stone")
+			end
+		end
+	elseif not hasItem("Leaf Stone") then
+		if not isShopOpen() then
+			return talkToNpcOnCell(1, 13)
+		else
+			if getMoney() > 3500 then
+				return buyItem("Leaf Stone")
+			end
+		end
+	else
+		return moveToCell(8, 15)
 	end
 end
 

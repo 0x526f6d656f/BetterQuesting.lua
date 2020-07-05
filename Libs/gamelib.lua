@@ -138,6 +138,7 @@ local pokemonIdTeach = 1
 function game.tryTeachMove(movename, ItemName)
 	if not game.hasPokemonWithMove(movename) then
 		if pokemonIdTeach > getTeamSize() then
+			pokemonIdTeach = 1
 			return fatal("No pokemon in this Team can learn: " .. ItemName)
 		else
 			log("Pokemon: " .. getPokemonName(pokemonIdTeach) .. " Try Learning: " .. ItemName)

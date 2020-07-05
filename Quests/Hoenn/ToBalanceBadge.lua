@@ -4,11 +4,9 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @WiWi__33[NetPapa]
 
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'To Balance Badge'
 local description = 'Will earn the 4th and the 5th badge'
@@ -17,7 +15,9 @@ local level = 48
 local ToBalanceBadge = Quest:new()
 
 function ToBalanceBadge:new()
-	return Quest.new(ToBalanceBadge, name, description, level, dialogs)
+	local o = Quest.new(ToBalanceBadge, name, description, level, dialogs)
+	o.relogged = false
+	return o
 end
 
 function ToBalanceBadge:isDoable()
@@ -276,7 +276,11 @@ function ToBalanceBadge:PetalburgCity()
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToCell(0, 16)
 	elseif isNpcOnCell(19, 12) then
-		return talkToNpcOnCell(19, 12)
+		if self.relogged then
+			return talkToNpcOnCell(19, 12)
+		else
+			return relog(60, "Can't talk to NPC - relogging...")
+		end
 	else
 		sys.debug("quest", "Going to get 5th badge.")
 		return moveToCell(19, 11)

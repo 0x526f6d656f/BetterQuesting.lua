@@ -10,7 +10,7 @@ local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
 
 local name        = 'To Mauville City'
-local description = 'Beat Museum, May and go to Mauville '
+local description = 'Beat Museum, May and go to Mauville'
 
 local level       = 30
 
@@ -31,14 +31,12 @@ local dialogs = {
 
 local toMauville = Quest:new()
 
-
 function toMauville:new()
 	return Quest.new(toMauville , name, description, level, dialogs)
 end
 
-
 function toMauville:isDoable()
-	if hasItem("Stone Badge") and self:hasMap() and not  hasItem("Dynamo Badge") then
+	if hasItem("Stone Badge") and self:hasMap() and not hasItem("Dynamo Badge") then
 		return true
 	end
 	return false
@@ -50,7 +48,6 @@ function toMauville:isDone()
 	end
 	return false
 end 
-
 	
 function toMauville:DevonCorporation3F()
 	sys.debug("quest", "Going to Mauville City.")
@@ -97,7 +94,7 @@ end
 function toMauville:DewfordTown()
 	pushDialogAnswer(2) -- Slateport
 	sys.debug("quest", "Going to Mauville City.")
-	return talkToNpcOnCell(37,9)
+	return talkToNpcOnCell(37, 9)
 end
 
 function toMauville:Route109()

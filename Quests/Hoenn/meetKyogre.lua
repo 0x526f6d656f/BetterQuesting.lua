@@ -18,14 +18,11 @@ local dive = nil
 local meetKyogre = Quest:new()
 
 function meetKyogre:new()
-	o = Quest.new(meetKyogre, name, description, level, dialogs)
-	o.pokemonId = 1
-
-	return o
+	return Quest.new(meetKyogre, name, description, level, dialogs)
 end
 
 function meetKyogre:isDoable()
-	if self:hasMap() and  hasItem("Blue Orb") and hasItem("Mind Badge")then
+	if self:hasMap() and hasItem("Blue Orb") and hasItem("Mind Badge")then
 		return true
 	end
 	return false
@@ -39,20 +36,21 @@ function meetKyogre:isDone()
 	end
 end
 
-
-
-
-
 function meetKyogre:MossdeepGym()
 	if game.inRectangle(47, 6, 56, 12) then
+		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(47, 6)
 	elseif game.inRectangle(2, 27, 17, 36) then
+		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(12, 27)
 	elseif game.inRectangle(2, 3, 19, 16) then
+		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(15, 3)
 	elseif game.inRectangle(45, 46, 59, 68) then
+		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(51, 48)
 	elseif game.inRectangle(2, 52, 20, 68) then
+		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(18, 68)
 	end
 end
@@ -70,18 +68,10 @@ function meetKyogre:MossdeepCity()
 		sys.debug("quest", "Going to Mossdeep City Space Center to get HM06 - Dive.")
 		return moveToCell(83, 21)
 
-	elseif not game.hasPokemonWithMove("Dive") then
-			if self.pokemonId <= getTeamSize() then
-				useItemOnPokemon("HM06 - Dive", self.pokemonId)
-				log("Trying to teach HM06 - Dive to: " .. getPokemonName(self.pokemonId))
-				self.pokemonId = self.pokemonId + 1
-			else
-				fatal("No Pokemon in this team can learn HM06 - Dive.")
-			end
-
-	else
+	elseif game.tryTeachMove("Dive", "HM06 - Dive") then
 		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(31, 55)
+	
 	end
 end
 

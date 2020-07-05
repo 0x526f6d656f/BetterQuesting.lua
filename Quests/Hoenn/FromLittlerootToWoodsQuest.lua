@@ -4,7 +4,6 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @WiWi__33[NetPapa]
 
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
@@ -44,8 +43,6 @@ end
 function FromLittlerootToWoodsQuest:isDone()
 	return getMapName() == "Petalburg Woods" or getMapName() == "Rustboro City" or (getMapName() == "Route 104" and game.inRectangle(2, 0, 74, 54))
 end
-
-
 
 function FromLittlerootToWoodsQuest:LittlerootTownTruck()
 	sys.debug("quest", "Going to Littleroot Town.")
@@ -162,13 +159,9 @@ function FromLittlerootToWoodsQuest:Route102()
 end
 
 function FromLittlerootToWoodsQuest:PetalburgCity()
-	if isNpcOnCell(38,22) then
+	if isNpcOnCell(38, 22) then
 		sys.debug("quest", "Going to talk to Wally.")
-		return talkToNpcOnCell (38,22)
-
-	elseif isNpcOnCell(19, 13) then -- ???
-		sys.debug("quest", "Going to talk to Norman.")
-		return talkToNpcOnCell(19, 13)
+		return talkToNpcOnCell (38, 22)
 
 	elseif self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Petalburg City" then
 		sys.debug("quest", "Going to heal Pokemon.")

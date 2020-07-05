@@ -12,7 +12,7 @@ local Dialog = require "Quests/Dialog"
 
 local name		  = 'Dynamo Badge'
 local description = 'Will earn Dynamo Badge'
-local level = 34
+local level = 36
 
 local relogged = false
 
@@ -44,15 +44,8 @@ function DynamoBadge:MauvilleCity()
 		sys.debug("quest", "Going to get Rock Smash.")
 		return moveToCell(39, 23)
 
-	elseif not game.hasPokemonWithMove("Rock Smash") then
-			if self.pokemonId <= getTeamSize() then
-				useItemOnPokemon("TM114 - Rock Smash", self.pokemonId)
-				log("Pokemon: " .. self.pokemonId .. " Try Learning: TM114 - Rock Smash")
-				self.pokemonId = self.pokemonId + 1
-				return
-			else
-				fatal("No pokemon in this team can learn Rock Smash")
-			end
+	elseif not game.tryTeachMove("Rock Smash", "TM114 - Rock Smash") then
+		fatal("Tell @Atem to fix me on Github.")
 
 	elseif self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Mauville City" then
 		sys.debug("quest", "Going to heal Pokemon.")

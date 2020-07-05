@@ -11,7 +11,10 @@ local description = 'Kanto Safari'
 local HmSurfQuest = Quest:new()
 
 function HmSurfQuest:new()
-	return Quest.new(HmSurfQuest, name, description, level)
+	local o = Quest.new(HmSurfQuest, name, description, level)
+	o.pokemon = "Exeggcute"
+	o.forceCaught = false
+	return o
 end
 
 function HmSurfQuest:isDoable()
@@ -36,7 +39,10 @@ function HmSurfQuest:SafariEntrance()
 end
 
 function HmSurfQuest:SafariArea1()
-	if not hasItem("HM03 - Surf") then
+	if not self.forceCaught then
+		sys.debug("quest", "Going to catch Exeggcute for later quest.")
+		return moveToGrass()
+	elseif not hasItem("HM03 - Surf") then
 		sys.debug("quest", "Going to get HM03 - Surf.")
 		return moveToCell(0, 17)
 	else

@@ -94,6 +94,7 @@ function Quest:pokemart(exitMapName)
 		local specialPokemartsNPCs2 = { -- NPC: 12, 9
 			"Mart Petalburg City",
 			"Mart Rustboro City",
+			"Mart Oldale Town",
 		}
 
 		local specialPokemartsNPCs3 = { -- NPC: 3, 6
@@ -146,6 +147,7 @@ function Quest:pokemart(exitMapName)
 		local specialPokemartsExits2 = { -- Exit: 3, 11
 			"Mart Petalburg City",
 			"Mart Rustboro City",
+			"Mart Oldale Town",
 		}
 
 		if sys.tableHasValue(specialPokemartsExits1, getMapName()) then
@@ -212,6 +214,14 @@ function Quest:leftovers()
 	end
 
 	if string.match(getMapName(), "Pokecenter") then
+		if PokemonWithLeftovers > 0 then
+			takeItemFromPokemon(PokemonWithLeftovers)
+			return true
+		end
+		return false
+	end
+	
+	if string.match(getMapName(), "Indigo Plateau Center") then
 		if PokemonWithLeftovers > 0 then
 			takeItemFromPokemon(PokemonWithLeftovers)
 			return true
@@ -372,6 +382,8 @@ function Quest:checkDiscoverables()
 	local blacklistHeadbuttMaps = {
 		"Route 35",
 		"Route 120",
+		"Route 119A",
+		"Fortree City",
 	}
 
 	if hasItem("Battering Ram") or (game.hasPokemonWithMove("Headbutt") and getPokemonHappiness(team.getFirstPkmWithMove("Headbutt")) >= 150) then
@@ -497,6 +509,10 @@ function Quest:fightTrainersOnMap()
 		"Seafloor Cavern R7",
 		"Sky Pillar Entrance Cave 1F",
 		"Jagged Pass",
+		"Mauville City",
+		"Mauville City Stop House 3",
+		"Mauville City Stop House 4",
+		"Route 40",
 
 	}
 
@@ -521,6 +537,7 @@ function Quest:checkNPCInteractions()
 		"Underground Warehouse",
 		"Mahogany Town Rocket Hideout B2F",
 		"Seafloor Cavern R7",
+		"Mauville City Stop House 4",
 	}
 
 	if sys.tableHasValue(mapBlacklistForNPCInteractions, getMapName()) then
@@ -594,6 +611,10 @@ function Quest:battle()
 		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
 	-- deoxys story quest
 	elseif self.name == "Beat Deoxys" and getOpponentLevel() == 110 then
+		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
+		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
+	-- to Sinnoh quest
+	elseif self.name == "To Sinnoh Quest" and getOpponentLevel() == 100 then
 		sys.debug("fighting team", "Special Quest: Don't Switch Pokemon, just attack.")
 		return attack() or sendUsablePokemon() or sendAnyPokemon() or useAnyMove()
 	end

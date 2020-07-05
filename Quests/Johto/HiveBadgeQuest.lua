@@ -16,7 +16,10 @@ local level = 22
 local HiveBadgeQuest = Quest:new()
 
 function HiveBadgeQuest:new()
-	return Quest.new(HiveBadgeQuest, name, description, level)
+	local o = Quest.new(HiveBadgeQuest, name, description, level)
+	o.pokemon = "Shinx"
+	o.forceCaught = false
+	return o
 end
 
 function HiveBadgeQuest:isDoable()
@@ -75,6 +78,9 @@ function HiveBadgeQuest:Route33()
 	if self:needPokecenter() or self:needPokemart() or self.registeredPokecenter ~= "Pokecenter Azalea" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(0, 21)
+	elseif not self.forceCaught then
+		sys.debug("quest", "Going to catch Shinx for later quest.")
+		return moveToRectangle(6, 23, 21, 27)
 	elseif not self:isTrainingOver() then
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToRectangle(6, 23, 21, 27)

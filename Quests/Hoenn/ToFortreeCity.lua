@@ -8,23 +8,15 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
 
 local name		  = 'To Fortree City'
 local description = 'Will save the Weather Institute and get the Devon Scope'
 local level = 49
 
-local dialogs = {
-	xxx = Dialog:new({ 
-		" "
-	})
-}
-
 local ToFortreeCity = Quest:new()
 
 function ToFortreeCity:new()
 	o = Quest.new(ToFortreeCity, name, description, level, dialogs)
-	o.pokemonId = 1
 	return o
 end
 
@@ -42,13 +34,6 @@ function ToFortreeCity:isDone()
 		return false
 	end
 end
-
-
-
-
-
-
-
 
 function ToFortreeCity:PetalburgCity()
 	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Petalburg City" then
@@ -118,13 +103,13 @@ function ToFortreeCity:Route119A()
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
 		return moveToRectangle(8, 60, 16, 74)
 
-	elseif isNpcOnCell (18, 43) then 
+	elseif isNpcOnCell(18, 43) then 
 		sys.debug("quest", "Going to rescue Weather Institute.")
 		return moveToCell(9, 40)
 
 	elseif isNpcOnCell(41, 30) then 
 		sys.debug("quest", "Going to fight May.")
-		talkToNpcOnCell(41, 30)
+		return talkToNpcOnCell(41, 30)
 
 	else
 		sys.debug("quest", "Going to Fortree City.")

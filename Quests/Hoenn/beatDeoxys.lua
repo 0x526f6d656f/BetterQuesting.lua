@@ -4,10 +4,6 @@
 -- as published by Sam Hocevar. See the COPYING file for more details.
 -- Quest: @WiWi__33[NetPapa]
 
-
--- maybe add a team manager here?
--- apparently any dark move pokemon with sucker punch does great against Deoxys.
-
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
 local pc	 = require "Libs/pclib"
@@ -20,17 +16,11 @@ local name		  = 'Beat Deoxys'
 local description = 'Will earn the 8th Badge and beat Deoxys on the moon'
 local level = 90
 
-local checkedForBestPokemon = false
-
-local deoxysBeaten = false
-
-local relogged = false
-
 local dialogs = {
-	goSky = Dialog:new({ 
+	goToSkyPillar = Dialog:new({ 
 		"He is currently at Sky Pillar"
 	}),
-	firstChamp = Dialog:new({ 
+	firstGymLeaderDone = Dialog:new({ 
 		"He is somewhere in this Gym..."
 	})
 }
@@ -38,11 +28,15 @@ local dialogs = {
 local beatDeoxys = Quest:new()
 
 function beatDeoxys:new()
-	return Quest.new(beatDeoxys, name, description, level, dialogs)
+	local o = Quest.new(beatDeoxys, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
+	o.deoxysBeaten = false
+	o.relogged = false
+	return o
 end
 
 function beatDeoxys:isDoable()
-	if self:hasMap() and not hasItem("Blue Orb") and not  hasItem("Rain Badge") then
+	if self:hasMap() and not hasItem("Blue Orb") and not hasItem("Rain Badge") then
 		return true
 	end
 	return false
@@ -56,15 +50,8 @@ function beatDeoxys:isDone()
 	end
 end
 
-
-
-
-
-
-
-
 function beatDeoxys:Route128()
-	if not dialogs.goSky.state then
+	if not dialogs.goToSkyPillar.state then
 		sys.debug("quest", "Going to talk to Steve in Sootopolis City.")
 		return moveToCell(32, 0)
 	else
@@ -74,7 +61,7 @@ function beatDeoxys:Route128()
 end
 
 function beatDeoxys:Route127()
-	if not dialogs.goSky.state then 
+	if not dialogs.goToSkyPillar.state then 
 		sys.debug("quest", "Going to talk to Steve in Sootopolis City.")
 		return moveToCell(0, 48)
 	else
@@ -98,7 +85,7 @@ function beatDeoxys:PokecenterMossdeepCity()
 end
 
 function beatDeoxys:Route126()
-	if not dialogs.goSky.state then 
+	if not dialogs.goToSkyPillar.state then 
 		local pokemonWithDive = team.getFirstPkmWithMove("Dive")
 	
 		pushDialogAnswer(1)
@@ -116,7 +103,7 @@ function beatDeoxys:Route126Underwater()
 	if isNpcOnCell(58, 97) then 
 		sys.debug("quest", "Going to talk to Roxanne.")
 		return talkToNpcOnCell(58, 97)
-	elseif not dialogs.goSky.state then 
+	elseif not dialogs.goToSkyPillar.state then 
 		sys.debug("quest", "Going to talk to Steve in Sootopolis City.")
 		return moveToCell(58, 96)
 	else
@@ -131,7 +118,7 @@ function beatDeoxys:Route126Underwater()
 end
 
 function beatDeoxys:SootopolisCityUnderwater()
-	if dialogs.goSky.state then 
+	if dialogs.goToSkyPillar.state then 
 		sys.debug("quest", "Going to fight Deoxys.")
 		return moveToCell(17, 20)
 	else 
@@ -149,16 +136,16 @@ function beatDeoxys:SootopolisCity()
 	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Sootopolis City" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(79, 56)
-	elseif isNpcOnCell(48, 68) and not dialogs.goSky.state then
-		if relogged then
+	elseif isNpcOnCell(48, 68) and not dialogs.goToSkyPillar.state then
+		if self.relogged then
 			sys.debug("quest", "Going to talk to Steven.")
 			return talkToNpcOnCell(50, 17)
 		else
 			sys.debug("quest", "Going to relog -- can't talk to NPC after Rayquaza teleport (doesn't have to be the case here).")
-			relogged = true
+			self.relogged = true
 			return relog(60, "Relogging...")
 		end
-	elseif dialogs.goSky.state then
+	elseif dialogs.goToSkyPillar.state then
 		local pokemonWithDive = team.getFirstPkmWithMove("Dive")
 	
 		pushDialogAnswer(1)
@@ -175,15 +162,6 @@ end
 function beatDeoxys:PokecenterSootopolisCity()
 	return self:pokecenter("Sootopolis City")
 end
-
-
-
-
-
-
-
-
-
 
 function beatDeoxys:Route129()
 	sys.debug("quest", "Going to fight Deoxys.")
@@ -223,11 +201,10 @@ function beatDeoxys:PokecenterPacifidlogTown()
 					log("Current Box: " .. getCurrentPCBoxId())
 					log("Box Size: " .. getCurrentPCBoxSize())
 					for teamPokemonIndex = 1, getTeamSize() do
-						local pkmRegion = pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn")
-						if pkmRegion ~= nil then
-							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pkmRegion)]["TotalStats"] then
-								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pkmRegion), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pkmRegion)]["TotalStats"]))
-								return swapPokemonFromPC(getCurrentPCBoxId(), pkmRegion, teamPokemonIndex)
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"), teamPokemonIndex)
 							end
 						end
 					end
@@ -238,18 +215,13 @@ function beatDeoxys:PokecenterPacifidlogTown()
 				end
 			end
 		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
 			return usePC()
 		end
 	else
 		return self:pokecenter("Pacifidlog Town")
 	end
 end
-
-
-
-
-
-
 
 function beatDeoxys:SkyPillarEntrance()
 	if game.inRectangle(9, 31, 47, 49) then
@@ -352,7 +324,7 @@ function beatDeoxys:Moon()
 		return moveToCell(15, 10)
 
 	elseif game.inRectangle(37, 8, 53, 29) or game.inRectangle(35, 19, 36, 26) or game.inRectangle(34, 19, 35, 22) then -- top right
-		if deoxysBeaten then
+		if self.deoxysBeaten then
 			sys.debug("quest", "Deoxys beaten, going to find Rayquaza in B1F.")
 			return moveToCell(53, 19)
 		else
@@ -369,7 +341,7 @@ function beatDeoxys:Moon()
 		talkToNpcOnCell(30, 28)
 
 	else
-		deoxysBeaten = true 
+		self.deoxysBeaten = true 
 		sys.debug("quest", "Deoxys beaten, going to find Rayquaza in B1F.")
 		return moveToCell(30, 18)
 		
@@ -398,11 +370,12 @@ end
 
 function beatDeoxys:MoonB1F()
 	if game.inRectangle(52, 12, 64, 26) then
-		dialogs.goSky.state = false
+		dialogs.goToSkyPillar.state = false
+		self.relogged = false
 		sys.debug("quest", "Going to talk to Rayquaza and get teleported back to Sootopolis City.")
 		return talkToNpcOnCell(60, 23)
 
-	elseif not deoxysBeaten then
+	elseif not self.deoxysBeaten then
 		sys.debug("quest", "Going to fight Deoxys.")
 		return moveToCell(32, 19)
 
@@ -414,7 +387,7 @@ function beatDeoxys:MoonB1F()
 end
 
 function beatDeoxys:Moon2F()
-	if not deoxysBeaten then
+	if not self.deoxysBeaten then
 		sys.debug("quest", "Going to fight Deoxys.")
 		return moveToCell(6, 8)
 	else
@@ -424,37 +397,36 @@ function beatDeoxys:Moon2F()
 end
 
 function beatDeoxys:SootopolisCityGym1F()
-	if game.inRectangle(22,38,22,38) then
+	sys.debug("quest", "Going to get 8th gym badge.")
+	if game.inCell(22, 38) then
 		return moveToCell(22,47)
-	elseif game.inRectangle(21,38,23,47) then
-		return moveToCell(22,38)
-	elseif game.inRectangle(22,38,22,38) then
-		return moveToCell(22,47)
-	elseif game.inRectangle(19,27,25,34) then
-		return moveToCell(22,29)
-	elseif game.inRectangle(17,5,25,23) and not dialogs.firstChamp.state then
-		return talkToNpcOnCell(22,6)
-	elseif game.inRectangle(17,4,27,23) and dialogs.firstChamp.state then
-		return moveToCell(22,17)
+
+	elseif game.inRectangle(21, 38, 23, 47) then
+		return moveToCell(22, 38)
+
+	elseif game.inCell(22, 38) then
+		return moveToCell(22, 47)
+
+	elseif game.inRectangle(19, 27, 25, 34) then
+		return moveToCell(22, 29)
+
+	elseif game.inRectangle(17, 5, 25, 23) and not dialogs.firstGymLeaderDone.state then
+		return talkToNpcOnCell(22, 6)
+
+	elseif game.inRectangle(17, 4, 27, 23) and dialogs.firstGymLeaderDone.state then
+		return moveToCell(22, 17)
+
 	end
 end
 
-
-
-
-
-
-
-
-
-
 function beatDeoxys:SootopolisCityGymB1F()
+	sys.debug("quest", "Going to get 8th gym badge.")
 	if game.inRectangle(4, 21, 8, 31) or game.inRectangle(4, 29, 17, 31) or game.inRectangle(8, 32, 18, 45) then
-		return moveToCell(13,34)
-	elseif game.inRectangle(13,21,22,28) then
-		return moveToCell(13,21)
-	elseif game.inRectangle(10,5,16,14) then
-		return talkToNpcOnCell(13,6)
+		return moveToCell(13, 34)
+	elseif game.inRectangle(13, 21, 22, 28) then
+		return moveToCell(13, 21)
+	elseif game.inRectangle(10, 5, 16, 14) then
+		return talkToNpcOnCell(13, 6)
 	end
 end
 

@@ -25,7 +25,10 @@ local StoneBadgeQuest = Quest:new()
 
 
 function StoneBadgeQuest:new()
-	return Quest.new(StoneBadgeQuest, name, description, level, dialogs)
+	local o = Quest.new(StoneBadgeQuest, name, description, level, dialogs)
+	o.pokemon = "Shroomish"
+	o.forceCaught = false
+	return o
 end
 
 function StoneBadgeQuest:isDoable()
@@ -45,14 +48,17 @@ end
 
 function StoneBadgeQuest:PetalburgWoods()
 	if isNpcOnCell(36, 30) and not dialogs.firstBattleDone.state then 
-		sys.debug("quest", "Goint to talk to NPC.")
+		sys.debug("quest", "Going to talk to NPC.")
 		return talkToNpcOnCell(36, 30)
 	elseif isNpcOnCell(38, 30) and dialogs.firstBattleDone.state then
-		sys.debug("quest", "Goint to talk to NPC.")
+		sys.debug("quest", "Going to talk to NPC.")
 		return talkToNpcOnCell(38, 30)
 	elseif isNpcOnCell(37, 29) then
-		sys.debug("quest", "Goint to talk to Scientist.")
+		sys.debug("quest", "Going to talk to Scientist.")
 		return talkToNpcOnCell(37, 29)
+	elseif not self.forceCaught then
+		sys.debug("quest", "Going to catch Shroomish for later quest.")
+		return moveToGrass()
 	else
 		sys.debug("quest", "Going to Rustboro City.")
 		return moveToCell(22, 0)
@@ -100,12 +106,12 @@ function StoneBadgeQuest:RustboroCity()
 	end
 end
 
-function StoneBadgeQuest:MartRustboroCity()
-	return self:pokemart()
-end
-
 function StoneBadgeQuest:PokecenterRustboroCity()
 	return self:pokecenter("Rustboro City")
+end
+
+function StoneBadgeQuest:MartRustboroCity()
+	return self:pokemart()
 end
 
 function StoneBadgeQuest:RustboroCityGym()
@@ -114,7 +120,7 @@ function StoneBadgeQuest:RustboroCityGym()
 		return moveToMap("Rustboro City")
 	elseif not hasItem("Stone Badge") then 
 		sys.debug("quest", "Going to get 1st badge.")
-		return talkToNpcOnCell(10,3)
+		return talkToNpcOnCell(10, 3)
 	end
 end	
 

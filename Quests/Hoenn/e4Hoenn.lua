@@ -62,7 +62,6 @@ function e4HoennQuest:isDone()
 	end
 end
 
-
 function e4HoennQuest:buyReviveItems() --return false if all items are on the bag (32x Revives 32x HyperPotions)
 	if getItemQuantity("Revive") < self.qnt_revive or getItemQuantity("Hyper Potion") < self.qnt_hyperpot then
 		if not isShopOpen() then
@@ -84,9 +83,20 @@ function e4HoennQuest:buyReviveItems() --return false if all items are on the ba
 	end
 end
 
-
-
-
+function e4HoennQuest:useReviveItems() --Return false if team don't need heal
+	if not hasItem("Revive") or not hasItem("Hyper Potion") then
+		return false
+	end
+	for pokemonId = 1, getTeamSize(), 1 do
+		if getPokemonHealth(pokemonId) == 0 then
+			return useItemOnPokemon("Revive", pokemonId)
+		end
+		if getPokemonHealthPercent(pokemonId) < 70 then
+			return useItemOnPokemon("Hyper Potion", pokemonId)
+		end		
+	end
+	return false
+end
 
 function e4HoennQuest:SootopolisCityGymB1F()
 	sys.debug("quest", "Going to Hoenn E4.")
@@ -116,6 +126,10 @@ function e4HoennQuest:SootopolisCity()
 		sys.debug("quest", "Going to Hoenn E4.")
 		return moveToCell(50, 91)
 	end
+end
+
+function e4HoennQuest:PokecenterSootopolisCity()
+	return self:pokecenter("Sootopolis City")
 end
 
 function e4HoennQuest:SootopolisCityUnderwater()
@@ -149,7 +163,8 @@ function e4HoennQuest:Route128()
 end
 
 function e4HoennQuest:EverGrandeCity()
-	if game.inRectangle(0, 55, 56, 118) then -- bottom part
+	-- bottom part
+	if game.inRectangle(0, 55, 56, 118) then
 		if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Ever Grande City" then
 			sys.debug("quest", "Going to heal Pokemon.")
 			return moveToCell(45, 64)
@@ -164,12 +179,13 @@ function e4HoennQuest:EverGrandeCity()
 
 		end
 
-	else -- top part
+	-- top part
+	else
 		if isNpcOnCell(30, 35) then
 			sys.debug("quest", "Going to fight Wally.")
-			return talkToNpcOnCell(30,35)
+			return talkToNpcOnCell(30, 35)
 
-		elseif self:needPokecenter() then
+		elseif self:needPokecenter() or self.registeredPokecenter ~= "Pokemon League Hoenn" then
 			sys.debug("quest", "Going to heal Pokemon.")
 			return moveToCell(31, 9)
 
@@ -190,8 +206,9 @@ function e4HoennQuest:PokecenterEverGrandeCity()
 end
 
 function e4HoennQuest:VictoryRoadHoenn1F()
-	if game.inRectangle(33, 5, 49, 14) then -- top part
-		if self:needPokecenter() then
+	-- top part
+	if game.inRectangle(33, 5, 49, 14) then
+		if self:needPokecenter() or self.registeredPokecenter ~= "Pokemon League Hoenn" then
 			sys.debug("quest", "Going to heal Pokemon.")
 			return moveToCell(46, 10)
 
@@ -204,7 +221,8 @@ function e4HoennQuest:VictoryRoadHoenn1F()
 			return moveToCell(46, 10)
 		end
 
-	else -- bottom part
+	-- bottom part
+	else
 		sys.debug("quest", "Going to Hoenn E4.")
 		return moveToCell(9, 17)
 	end
@@ -263,19 +281,15 @@ function e4HoennQuest:PokemonLeagueHoenn()
 	end
 end
 
-function e4HoennQuest:PokecenterSootopolisCity()
-	return self:pokecenter("Sootopolis City")
-end
-
 function e4HoennQuest:EliteFourSidneyRoom()
 	if self:useReviveItems() ~= false then
 		return
 	elseif not dialogs.sidney.state then
-		sys.debug("quest", "Going to fight #1 Sidney.")
-		return talkToNpcOnCell(18,17) 
+		sys.debug("quest", "Going to fight #1 - Sidney.")
+		return talkToNpcOnCell(18, 17) 
 	else
-		sys.debug("quest", "Going to fight #2 Phoebe.")
-		return moveToCell(18,3) 
+		sys.debug("quest", "Going to fight #2 - Phoebe.")
+		return moveToCell(18, 3) 
 	end
 end
 
@@ -283,11 +297,11 @@ function e4HoennQuest:EliteFourPhoebeRoom()
 	if self:useReviveItems() ~= false then
 		return
 	elseif not dialogs.phoebe.state then
-		sys.debug("quest", "Going to fight #2 Phoebe.")
-		return talkToNpcOnCell(17,22) 
+		sys.debug("quest", "Going to fight #2 - Phoebe.")
+		return talkToNpcOnCell(17, 22) 
 	else
-		sys.debug("quest", "Going to fight #3 Glacia.")
-		return moveToCell(17,12) 
+		sys.debug("quest", "Going to fight #3 - Glacia.")
+		return moveToCell(17, 12) 
 	end
 end
 
@@ -295,11 +309,11 @@ function e4HoennQuest:EliteFourGlaciaRoom()
 	if self:useReviveItems() ~= false then
 		return
 	elseif not dialogs.glacia.state then
-		sys.debug("quest", "Going to fight #3 Glacia.")
-		return talkToNpcOnCell(15,16) 
+		sys.debug("quest", "Going to fight #3 - Glacia.")
+		return talkToNpcOnCell(15, 16) 
 	else
-		sys.debug("quest", "Going to fight #4 Drake.")
-		return moveToCell(15,3) 
+		sys.debug("quest", "Going to fight #4 - Drake.")
+		return moveToCell(15, 3) 
 	end
 end
 
@@ -307,11 +321,11 @@ function e4HoennQuest:EliteFourDrakeRoom()
 	if self:useReviveItems() ~= false then
 		return
 	elseif not dialogs.drake.state then
-		sys.debug("quest", "Going to fight #4 Drake.")
-		return talkToNpcOnCell(17,16) 
+		sys.debug("quest", "Going to fight #4 - Drake.")
+		return talkToNpcOnCell(17, 16) 
 	else
-		sys.debug("quest", "Going to fight #5 Champion Steve.")
-		return moveToCell(17,2) 
+		sys.debug("quest", "Going to fight #5 - Champion Steve.")
+		return moveToCell(17, 2) 
 	end
 end
 
@@ -319,29 +333,12 @@ function e4HoennQuest:EliteFourChampionRoomHoenn()
 	if self:useReviveItems() ~= false then
 		return
 	elseif not dialogs.steven.state then
-		sys.debug("quest", "Going to fight #5 Champion Steve.")
-		return talkToNpcOnCell(6,16) 
+		sys.debug("quest", "Going to fight #5 - Champion Steve.")
+		return talkToNpcOnCell(6, 16) 
 	else
 		sys.debug("quest", "Going to talk to Prof. Birch.")
-		return talkToNpcOnCell(6,4)
+		return talkToNpcOnCell(6, 4)
 	end
 end
-
-
-function e4HoennQuest:useReviveItems() --Return false if team don't need heal
-	if not hasItem("Revive") or not hasItem("Hyper Potion") then
-		return false
-	end
-	for pokemonId=1, getTeamSize(), 1 do
-		if getPokemonHealth(pokemonId) == 0 then
-			return useItemOnPokemon("Revive", pokemonId)
-		end
-		if getPokemonHealthPercent(pokemonId) < 70 then
-			return useItemOnPokemon("Hyper Potion", pokemonId)
-		end		
-	end
-	return false
-end
-
 
 return e4HoennQuest

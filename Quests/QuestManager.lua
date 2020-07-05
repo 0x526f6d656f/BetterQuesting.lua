@@ -55,20 +55,20 @@ local Elite4Johto					= require('Quests/Johto/Elite4Johto')
 local GoToHoennQuest			= require('Quests/Johto/GoToHoennQuest')
 
 --Hoenn
--- local FromLittlerootToWoodsQuest = require('Quests/Hoenn/FromLittlerootToWoodsQuest')
--- local StoneBadgeQuest 			 = require('Quests/Hoenn/StoneBadgeQuest')
--- local getSLetter 				 = require('Quests/Hoenn/getSLetter')
--- local KnuckleBadgeQuest 		 = require('Quests/Hoenn/KnuckleBadgeQuest')
--- local toMauville 				 = require('Quests/Hoenn/toMauville')
--- local DynamoBadge				 = require('Quests/Hoenn/DynamoBadge')
--- local ToLavaridgeTown	  		 = require('Quests/Hoenn/ToLavaridgeTown')
--- local ToBalanceBadge 		     = require('Quests/Hoenn/ToBalanceBadge')
--- local ToFortreeCity  		     = require('Quests/Hoenn/ToFortreeCity')
--- local GetTheOrbs 				 = require('Quests/Hoenn/GetTheOrbs')
--- local MagmaHideout			     = require('Quests/Hoenn/MagmaHideout') -- maybe needs a training part
--- local ToMossdeepCity			 = require('Quests/Hoenn/ToMossdeepCity')
--- local meetKyogre			     = require('Quests/Hoenn/meetKyogre')
--- local beatDeoxys				 = require('Quests/Hoenn/beatDeoxys')
+local FromLittlerootToWoodsQuest = require('Quests/Hoenn/FromLittlerootToWoodsQuest')
+local StoneBadgeQuest 			 = require('Quests/Hoenn/StoneBadgeQuest')
+local getSLetter 				 = require('Quests/Hoenn/getSLetter')
+local KnuckleBadgeQuest 		 = require('Quests/Hoenn/KnuckleBadgeQuest')
+local toMauville 				 = require('Quests/Hoenn/toMauville')
+local DynamoBadge				 = require('Quests/Hoenn/DynamoBadge')
+local ToLavaridgeTown	  		 = require('Quests/Hoenn/ToLavaridgeTown')
+local ToBalanceBadge 		     = require('Quests/Hoenn/ToBalanceBadge')
+local ToFortreeCity  		     = require('Quests/Hoenn/ToFortreeCity')
+local GetTheOrbs 				 = require('Quests/Hoenn/GetTheOrbs')
+local MagmaHideout			     = require('Quests/Hoenn/MagmaHideout') -- maybe needs a training part
+local ToMossdeepCity			 = require('Quests/Hoenn/ToMossdeepCity')
+local meetKyogre			     = require('Quests/Hoenn/meetKyogre')
+local beatDeoxys				 = require('Quests/Hoenn/beatDeoxys')
 -- local e4Hoenn					 = require('Quests/Hoenn/e4Hoenn')
 -- local toSinnoh					 = require('Quests/Hoenn/toSinnoh')
 
@@ -122,20 +122,20 @@ local quests = {
 	GoToHoennQuest:new(),
 	
 	--HoennQuest
-	-- FromLittlerootToWoodsQuest:new(),
-	-- StoneBadgeQuest:new(),
-	-- getSLetter:new(),
-	-- KnuckleBadgeQuest:new(),
-	-- toMauville:new(),
-	-- DynamoBadge:new(),
-	-- ToLavaridgeTown:new(),
-	-- ToBalanceBadge:new(),
-	-- ToFortreeCity:new(),
-	-- GetTheOrbs:new(),
-	-- MagmaHideout:new(),
-	-- ToMossdeepCity:new(),
-	-- meetKyogre:new(),
-	-- beatDeoxys:new(),
+	FromLittlerootToWoodsQuest:new(),
+	StoneBadgeQuest:new(),
+	getSLetter:new(),
+	KnuckleBadgeQuest:new(),
+	toMauville:new(),
+	DynamoBadge:new(),
+	ToLavaridgeTown:new(),
+	ToBalanceBadge:new(),
+	ToFortreeCity:new(),
+	GetTheOrbs:new(),
+	MagmaHideout:new(),
+	ToMossdeepCity:new(), -- i'll have to fix this up at some point, aqua hideout is a fucking mess...
+	meetKyogre:new(),
+	beatDeoxys:new(),
 	-- e4Hoenn:new(),
 	-- toSinnoh:new(),
 }

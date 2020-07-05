@@ -7,26 +7,21 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'Get the Orbs'
 local description = 'Will get the Blue and Red Orbs'
-local level = 55
-
-local dialogs = {
-	jack = Dialog:new({ 
-		"Many lives were lost"
-	}),
-	featherDone = Dialog:new({
-		"Good job on getting the Feather Badge"
-	})
-}
+local level = 60
 
 local GetTheOrbs = Quest:new()
 
 function GetTheOrbs:new()
-	return Quest.new(GetTheOrbs, name, description, level, dialogs)
+	local o = Quest.new(GetTheOrbs, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
+	return o
 end
 
 function GetTheOrbs:isDoable()
@@ -44,15 +39,8 @@ function GetTheOrbs:isDone()
 	end
 end
 
-
-
-
-
-
-
-
 function GetTheOrbs:Route120()
-	if self:needPokecenter() then 
+	if self:needPokecenter() or self.registeredPokecenter ~= "Pokecenter Fortree City" then 
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(0, 8)
 	elseif not self:isTrainingOver() then 
@@ -79,7 +67,7 @@ function GetTheOrbs:FortreeCity()
 		return moveToCell(7, 23)
 	elseif not self:isTrainingOver() then 
 		sys.debug("quest", "Going to level Pokemon until Level " .. self.level .. ".")
-		moveToCell(54, 14)
+		return moveToCell(54, 14)
 	elseif not hasItem("Feather Badge") then 
 		sys.debug("quest", "Going to get 6th badge.")
 		return moveToCell(29, 16)
@@ -90,7 +78,33 @@ function GetTheOrbs:FortreeCity()
 end
 
 function GetTheOrbs:PokecenterFortreeCity()
-	return self:pokecenter("Fortree City")
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		return self:pokecenter("Fortree City")
+	end
 end
 
 function GetTheOrbs:FortreeMart()
@@ -143,18 +157,16 @@ function GetTheOrbs:MtPyreExterior()
 end
 
 function GetTheOrbs:MtPyreSummit() -- need to check
-	if isNpcOnCell(27,12) then 
-		talkToNpcOnCell(27,12)
-	elseif isNpcOnCell(26,11) then
-		talkToNpcOnCell(26,11)
-	elseif not isNpcOnCell(27,4) then
-		talkToNpcOnCell(26,4)
-		dialogs.jack.state = true
-		return
-	elseif not dialogs.jack.state then
-		moveToCell(27,6)
-	
-	end	
+	if isNpcOnCell(27, 12) then 
+		sys.debug("quest", "Going to talk to NPC.")
+		return talkToNpcOnCell(27, 12)
+	elseif isNpcOnCell(27, 4) then
+		sys.debug("quest", "Going to talk to NPC.")
+		return moveToCell(27, 6)
+	elseif isNpcOnCell(26, 4) then
+		sys.debug("quest", "Going to talk to Old Man.")
+		return talkToNpcOnCell(26, 4)
+	end
 end
 
 return GetTheOrbs

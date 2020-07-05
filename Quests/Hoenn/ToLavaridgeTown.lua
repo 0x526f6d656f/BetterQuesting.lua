@@ -7,23 +7,21 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
-local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'To Lavaridge Town'
 local description = 'Will go to the Mt. Pyre and defeat Max'
 local level = 40
 
-local dialogs = {
-	jacksonMete = Dialog:new({ 
-		"First you pester me in Kanto"
-	}),
-}
-
 local ToLavaridgeTown = Quest:new()
 
 function ToLavaridgeTown:new()
-	return Quest.new(ToLavaridgeTown, name, description, level, dialogs)
+	local o = Quest.new(ToLavaridgeTown, name, description, level, dialogs)
+	o.checkedForBestPokemon = false
+	return o
 end
 
 function ToLavaridgeTown:isDoable()
@@ -73,9 +71,9 @@ function ToLavaridgeTown:MauvilleCityStopHouse3()
 end
 
 function ToLavaridgeTown:Route111South()
-	if isNpcOnCell(23,51) then
+	if isNpcOnCell(23, 51) then
 		sys.debug("quest", "Going to talk to NPC Hiker.")
-		return talkToNpcOnCell(23,51)
+		return talkToNpcOnCell(23, 51)
 	else
 		sys.debug("quest", "Going to Lavaridge Town.")
 		return moveToCell(0, 23)
@@ -104,7 +102,7 @@ end
 
 function ToLavaridgeTown:FieryPath()
 	sys.debug("quest", "Going to Lavaridge Town.")
-	return moveToCell(38,8)
+	return moveToCell(38, 8)
 end
 
 function ToLavaridgeTown:Route111North()
@@ -122,7 +120,7 @@ function ToLavaridgeTown:Route113()
 	end
 end
 
-function ToLavaridgeTown:FallarborTown()
+function ToLavaridgeTown:FallarborTown() -- maybe update it so XP will be farmed in Meteorfalls1F1R
 	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Fallarbor Town" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(30, 12)
@@ -136,7 +134,33 @@ function ToLavaridgeTown:FallarborTown()
 end
 
 function ToLavaridgeTown:PokecenterFallarborTown()
-	return self:pokecenter("Fallarbor Town")
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		return self:pokecenter("Fallarbor Town")
+	end
 end
 
 function ToLavaridgeTown:Route114()
@@ -149,10 +173,7 @@ function ToLavaridgeTown:Meteorfalls1F1R()
 		sys.debug("quest", "Going to fight Jackson.")
 		return talkToNpcOnCell(31, 23)
 
-	elseif not isNpcOnCell(31, 23) and not dialogs.jacksonMete.state then
-		dialogs.jacksonMete.state = true	
-
-	elseif dialogs.jacksonMete.state then 
+	else
 		sys.debug("quest", "Going to Lavaridge Town.")
 		return moveToCell(19, 46)
 	end	

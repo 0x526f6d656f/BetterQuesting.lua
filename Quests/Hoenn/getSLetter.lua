@@ -36,7 +36,6 @@ function getSLetter:new()
 	return Quest.new(getSLetter, name, description, level, dialogs)
 end
 
-
 function getSLetter:isDoable()
 	if getMapName() == "Route 104" and game.inRectangle(0, 74, 78, 148) then
 		return false
@@ -51,11 +50,6 @@ function getSLetter:isDone()
 	return getMapName() == "Petalburg Woods"
 	or (getMapName() == "Route 104" and game.inRectangle(0, 74, 78, 148))
 end 
-
-
-
-
-
 
 function getSLetter:RustboroCityGym()
 	sys.debug("quest", "Going back to Rustboro City.")
@@ -110,11 +104,14 @@ function getSLetter:Route116()
 end
 
 function getSLetter:RusturfTunnel()
-	if isNpcOnCell(18,8)and not dialogs.magmaCheck.state then
-		return talkToNpcOnCell(18,8)
-	elseif isNpcOnCell(19,9) then 
-		return talkToNpcOnCell(19,9)
+	if isNpcOnCell(18, 8) and not dialogs.magmaCheck.state then
+		sys.debug("quest", "Going to fight Magma grunt #1.")
+		return talkToNpcOnCell(18, 8)
+	elseif isNpcOnCell(19, 9) then 
+		sys.debug("quest", "Going to fight Magma grunt #2.")
+		return talkToNpcOnCell(19, 9)
 	else
+		sys.debug("quest", "Going to Rustboro City.")
 		return moveToCell(11, 19)
 	end
 end

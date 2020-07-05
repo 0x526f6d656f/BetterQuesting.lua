@@ -7,8 +7,11 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
 local Dialog = require "Quests/Dialog"
+
+local luaPokemonData = require "Data/luaPokemonData"
 
 local name		  = 'To Mossdeep City'
 local description = 'Clear the Aqua Hideout of Lilycove and earn the 7th badge'
@@ -33,8 +36,8 @@ local ToMossdeepCity = Quest:new()
 
 function ToMossdeepCity:new()
 	local o = Quest.new(ToMossdeepCity, name, description, level, dialogs)
-	o.pokemon = "Metapod"
-	o.forceCaught = false
+	o.shellyBeaten = false
+	o.checkedForBestPokemon = false
 	return o
 end
 
@@ -46,16 +49,12 @@ function ToMossdeepCity:isDoable()
 end
 
 function ToMossdeepCity:isDone()
-	if hasItem("Mind Badge") and (getMapName() == "Mossdeep City" or getMapName() == "Mosdeep Gym") then
+	if hasItem("Mind Badge") then
 		return true
 	else
 		return false
 	end
 end
-
-
-
-
 
 function ToMossdeepCity:MagmaHideout4F()
 	sys.debug("quest", "Going to Mossdeep City.")
@@ -155,15 +154,6 @@ function ToMossdeepCity:LilycoveCity()
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(26, 20)
 
-	elseif not self.forceCaught then
-		if not game.inCell(63, 24) then
-			sys.debug("quest", "Going to catch Staryu for Sinnoh quest.")
-			return moveToCell(63, 24)
-		else
-			sys.debug("quest", "Going to catch Staryu for Sinnoh quest.")
-			return useItem("Super Rod")
-		end
-
 	elseif not dialogs.finaqua.state then
 		sys.debug("quest", "Going to fight Aqua Clearout.")
 		return moveToCell(81, 8)
@@ -205,7 +195,7 @@ function ToMossdeepCity:TeamAquaHideoutB1F()
 			sys.debug("quest", "Going to fight Aqua Clearout.")
 			return moveToCell(3, 29)
 		else
-			dialogs.shelly.state = true
+			self.shellyBeaten = true
 			return moveToCell(3, 29)
 		end
 
@@ -214,11 +204,13 @@ function ToMossdeepCity:TeamAquaHideoutB1F()
 		return moveToCell(35, 8)
 
 	elseif game.inRectangle(33, 13, 40, 22) then
-		if isNpcOnCell(38,18) then
-			return talkToNpcOnCell(38,18)
+		if self.shellyBeaten then
+			return moveToCell(35, 20)
+		elseif isNpcOnCell(38, 18) then
+			sys.debug("quest", "Going to fight Shelly.")
+			return talkToNpcOnCell(38, 18)
 		else
-			dialogs.shelly.state = true
-			return moveToCell(35,20)
+			self.shellyBeaten = true
 		end
 	end
 end
@@ -226,7 +218,7 @@ end
 function ToMossdeepCity:TeamAquaHideoutWarpHallway()
 	if game.inRectangle(12, 32, 26, 32) then
 		return moveToCell(19, 32)
-	elseif not dialogs.shelly.state then
+	elseif not self.shellyBeaten then
 		if game.inRectangle(12, 17, 26, 17) then
 			return moveToCell(19, 17)
 		elseif game.inRectangle(12, 24, 26, 24) then
@@ -249,10 +241,10 @@ end
 
 function ToMossdeepCity:TeamAquaHideoutB2F()
 	if game.inRectangle(7, 3, 14, 11) then
-		if not dialogs.shelly.state then
-			return moveToCell(12,4)
+		if not self.shellyBeaten then
+			return moveToCell(12, 4)
 		else
-			return moveToCell(9,10)
+			return moveToCell(9, 10)
 		end
 
 	elseif game.inRectangle(16, 3, 40, 11) or game.inRectangle(21, 12, 40, 19) then
@@ -260,7 +252,8 @@ function ToMossdeepCity:TeamAquaHideoutB2F()
 
 	elseif game.inRectangle(25, 24, 40, 35) then
 		if isNpcOnCell(28, 30) then
-			return talkToNpcOnCell(28,30)
+			sys.debug("quest", "Going to fight Magma Grunt.")
+			return talkToNpcOnCell(28, 30)
 		end
 	end
 end
@@ -280,6 +273,7 @@ function ToMossdeepCity:MossdeepCity()
 		return moveToCell(36, 21)
 
 	elseif self:needPokemart() then
+		sys.debug("quest", "Going to buy Pokeballs.")
 		return moveToCell(51, 21)
 
 	elseif not self:isTrainingOver() then
@@ -289,12 +283,37 @@ function ToMossdeepCity:MossdeepCity()
 	elseif not hasItem("Mind Badge") then
 		sys.debug("quest", "Going to get 7th badge.")
 		return moveToCell(53, 7)
-
 	end
 end
 
 function ToMossdeepCity:PokecenterMossdeepCity()
-	return self:pokecenter("Mossdeep City")
+	if not self.checkedForBestPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for teamPokemonIndex = 1, getTeamSize() do
+						if pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn") ~= nil then
+							if luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"] < luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"] then
+								log(string.format("Swapping Team Pokemon %s (Total Stats: %i) with Box %i Pokemon %s (Total Stats: %i)", getPokemonName(teamPokemonIndex), luaPokemonData[getPokemonName(teamPokemonIndex)]["TotalStats"], getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn")), luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"))]["TotalStats"]))
+								return swapPokemonFromPC(getCurrentPCBoxId(), pc.getBestPokemonIdFromCurrentBoxFromRegion("Hoenn"), teamPokemonIndex)
+							end
+						end
+					end
+					return openPCBox(getCurrentPCBoxId() + 1)
+				else
+					sys.debug("quest", "Checked for best Pokemon from PC.")
+					self.checkedForBestPokemon = true
+				end
+			end
+		else
+			sys.debug("quest", "Going to check for better Pokemon in boxes.")
+			return usePC()
+		end
+	else
+		return self:pokecenter("Mossdeep City")
+	end
 end
 
 function ToMossdeepCity:MossdeepPokemart()
@@ -341,69 +360,43 @@ function ToMossdeepCity:HighTideEntranceRoom()
 end
 
 function ToMossdeepCity:MossdeepGym() -- double check
+	-- bottom left
 	if game.inRectangle(0, 51, 21, 70) then
-		if not hasItem("Mind Badge") then
-			return moveToCell(5, 52)
-		else
-			return moveToCell(18, 68)
-		end
+		sys.debug("quest", "Going to get 7th badge.")
+		return moveToCell(5, 52)
 
+	-- bottom right
 	elseif game.inRectangle(44, 42, 60, 70) then
+		sys.debug("quest", "Going to get 7th badge.")
 		return moveToCell(54, 65)
 
+	-- top left
 	elseif game.inRectangle(0, 0, 20, 16) then
-		if not hasItem("Mind Badge") then
-			if not dialogs.liza.state then
-				return talkToNpcOnCell(18, 6)
-			else
-				return moveToCell(7, 3)
-			end
+		if not dialogs.liza.state then
+			sys.debug("quest", "Going to fight Liza.")
+			return talkToNpcOnCell(18, 6)
 		else
-			return moveToCell(15, 3)
+			sys.debug("quest", "Going to fight Tate.")
+			return moveToCell(7, 3)
 		end
 
+	-- middle left
 	elseif game.inRectangle(1, 27, 17, 37) then
-		if not hasItem("Mind Badge") then
-			if not dialogs.liza.state then
-				return moveToCell(12, 27)
-			elseif not dialogs.tate.state then
-				return moveToCell(10, 34)
-			end
-		else
+		if not dialogs.liza.state then
+			sys.debug("quest", "Going to fight Liza.")
 			return moveToCell(12, 27)
+		elseif not dialogs.tate.state then
+			sys.debug("quest", "Going to fight Tate.")
+			return moveToCell(10, 34)
 		end
 
+	-- top right
 	elseif game.inRectangle(47, 6, 56, 12) then
-		if not hasItem("Mind Badge") then
-			if not dialogs.tate.state then
-				return talkToNpcOnCell(52, 8)
-			end
-		else
-			return moveToCell(47, 6)
+		if not dialogs.tate.state then
+			sys.debug("quest", "Going to fight Tate.")
+			return talkToNpcOnCell(52, 8)
 		end
 	end
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 return ToMossdeepCity
