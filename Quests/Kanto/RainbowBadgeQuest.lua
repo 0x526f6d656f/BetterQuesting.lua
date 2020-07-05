@@ -179,7 +179,7 @@ function RainbowBadgeQuest:CeladonMart4()
 			return talkToNpcOnCell(1, 13)
 		else
 			if getMoney() > 3500 then
-				return buyItem("Fire Stone")
+				return buyItem("Fire Stone", 1)
 			end
 		end
 	elseif not hasItem("Leaf Stone") then
@@ -187,11 +187,11 @@ function RainbowBadgeQuest:CeladonMart4()
 			return talkToNpcOnCell(1, 13)
 		else
 			if getMoney() > 3500 then
-				return buyItem("Leaf Stone")
+				return buyItem("Leaf Stone", 1)
 			end
 		end
 	else
-		return moveToCell(8, 15)
+		return moveToCell(9, 2)
 	end
 end
 
