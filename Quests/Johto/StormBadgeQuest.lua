@@ -13,7 +13,6 @@ local Dialog = require "Quests/Dialog"
 
 local luaPokemonData = require "Data/luaPokemonData"
 
-
 local name		  = 'Storm Badge Quest'
 local description = 'Will exp to lv 49 and earn the 5th badge'
 local level = 49

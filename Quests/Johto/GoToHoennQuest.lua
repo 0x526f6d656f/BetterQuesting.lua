@@ -245,7 +245,7 @@ function GoToHoennQuest:PokecenterCinnabar()
 					for i = 1, getCurrentPCBoxSize() do
 						if getPokemonLevelFromPC(getCurrentPCBoxId(), i) > 40 then
 							if getPokemonNameFromPC(getCurrentPCBoxId(), i) == "Rattata" then
-								log(string.format("Swapping Team Pokemon %s out with Rattata Lv %i from Boxes.", getPokemonName(i), getPokemonLevelFromPC(getCurrentPCBoxId(), i)))
+								log(string.format("Swapping Team Pokemon %s out with Rattata Lv %i from Boxes.", getPokemonName(self:getWeakestPokemonInTeam()), getPokemonLevelFromPC(getCurrentPCBoxId(), i)))
 								return swapPokemonFromPC(getCurrentPCBoxId(), i, self:getWeakestPokemonInTeam())
 							end
 						end

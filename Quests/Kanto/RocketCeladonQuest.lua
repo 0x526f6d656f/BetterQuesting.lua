@@ -183,12 +183,16 @@ function RocketCeladonQuest:UndergroundHouse4()
 end
 
 function RocketCeladonQuest:Route8()
-	if not self:isTrainingOver() and not self:needPokecenter() then
-		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
-		return moveToRectangle(38, 11, 42, 15)
+	if game.tryTeachMove("Cut", "HM01 - Cut") then
+		if not self:isTrainingOver() and not self:needPokecenter() then
+			sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
+			return moveToRectangle(38, 11, 42, 15)
+		else
+			sys.debug("quest", "Going to heal Pokemon.")
+			return moveToCell(12, 9)
+		end
 	else
-		sys.debug("quest", "Going to heal Pokemon.")
-		return moveToCell(12, 9)
+		fatal("Need Pokemon that can learn cut.")
 	end
 end
 

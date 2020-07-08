@@ -110,7 +110,7 @@ end
 function SoulBadgeQuest:PokecenterFuchsia()
 	if not hasPokemonInTeam("Flareon") then
 		if hasPokemonInTeam("Eevee") then
-			return useItemOnPokemon("Fire Stone", hasPokemonWithName("Eevee"))
+			return useItemOnPokemon("Fire Stone", game.hasPokemonWithName("Eevee"))
 		else
 			if isPCOpen() then
 				if isCurrentPCBoxRefreshed() then
@@ -119,9 +119,9 @@ function SoulBadgeQuest:PokecenterFuchsia()
 						log("Box Size: " .. getCurrentPCBoxSize())
 						for i = 1, getCurrentPCBoxSize() do
 							if isCurrentPCBoxRefreshed() then
-								if getPokemonNameFromPC(getCurrentPCBoxId(), i) == "Eevee" then
+								if getPokemonNameFromPC(getCurrentPCBoxId(), i) == "Eevee" or getPokemonNameFromPC(getCurrentPCBoxId(), i) == "Flareon" then
 									if swapPokemonFromPC(getCurrentPCBoxId(), i, math.random(1, 6)) then
-										log("Putting Eevee in our team, so we can evolve it to Flareon.")
+										log("Putting Eevee/Flareon in our team, so we can evolve it to Flareon.")
 									end
 								end
 							end
@@ -130,12 +130,12 @@ function SoulBadgeQuest:PokecenterFuchsia()
 							return openPCBox(getCurrentPCBoxId() + 1)
 						end
 					else
-						sys.debug("quest, Checked for Eevee from PC.")
+						sys.debug("quest, Checked for Eevee/Flareon from PC.")
 						return moveToCell(getPlayerX(), getPlayerY() + 1) -- close pc
 					end
 				end
 			else
-				sys.debug("quest", "Going to get Eevee from Boxes.")
+				sys.debug("quest", "Going to get Eevee/Flareon from Boxes.")
 				return usePC()
 			end
 		end

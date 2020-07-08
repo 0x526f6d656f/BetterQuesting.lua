@@ -384,6 +384,7 @@ function Quest:checkDiscoverables()
 		"Route 120",
 		"Route 119A",
 		"Fortree City",
+		"Rustboro City",
 	}
 
 	if hasItem("Battering Ram") or (game.hasPokemonWithMove("Headbutt") and getPokemonHappiness(team.getFirstPkmWithMove("Headbutt")) >= 150) then
@@ -513,6 +514,7 @@ function Quest:fightTrainersOnMap()
 		"Mauville City Stop House 3",
 		"Mauville City Stop House 4",
 		"Route 40",
+		"Route 27",
 
 	}
 

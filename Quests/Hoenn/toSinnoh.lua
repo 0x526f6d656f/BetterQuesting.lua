@@ -5,11 +5,11 @@
 -- Quest: @Atem
 
 -- Last battle is pretty difficult, so we need to catch these Pokemon (should be sorted like that before the last battle too)
--- 1. Luxray     --done
--- 2. Exeggutor  --done
--- 3. Heracross  --done with picking up abandoned pokemon
--- 4. Swampert   --done by quest
--- 5. Flareon    --probably done...
+-- 1. Luxray     --done and checked
+-- 2. Exeggutor  --done and checked
+-- 3. Heracross  --done and checked
+-- 4. Swampert   --done and checked
+-- 5. Flareon    --done and checked
 -- 6. Breloom    --done
 
 

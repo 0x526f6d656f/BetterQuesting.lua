@@ -230,7 +230,12 @@ end
 function GlacierBadgeQuest:MahoganyTownRocketHideoutB2F()
 	-- bottom part
 	if game.inRectangle(0, 23, 50, 30) then
-		if not dialogs.goChangeComputerSettings.state then 
+		if not isNpcOnCell(24, 22) then
+			if isNpcOnCell(33, 13) then
+				sys.debug("quest", "Going to fight Electrodes.")
+				return moveToCell(23, 18)
+			end
+		elseif not dialogs.goChangeComputerSettings.state then 
 			if isNpcOnCell(24, 22) then
 				sys.debug("quest", "Going to talk to Lance.")
 				if not game.inCell(24, 23) then
@@ -238,12 +243,7 @@ function GlacierBadgeQuest:MahoganyTownRocketHideoutB2F()
 				else
 					return talkToNpcOnCell(24, 22)
 				end
-			else
-				dialogs.goChangeComputerSettings.state = true
 			end
-		elseif isNpcOnCell(33, 13) then
-			sys.debug("quest", "Going to fight Electrodes.")
-			return moveToCell(23, 18)
 		else
 			sys.debug("quest", "Going to change Computer Settings.")
 			return moveToCell(49, 30)
@@ -327,6 +327,7 @@ function GlacierBadgeQuest:MahoganyTownRocketHideoutB3F()
 				return moveToCell(49, 5)
 			else
 				sys.debug("quest", "Going to talk to Lance.")
+				dialogs.goChangeComputerSettings.state = false
 				return moveToCell(49, 30)
 			end
 		else

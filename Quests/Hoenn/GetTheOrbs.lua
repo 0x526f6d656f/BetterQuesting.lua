@@ -49,9 +49,6 @@ function GetTheOrbs:Route120()
 	elseif not hasItem("Feather Badge") then
 		sys.debug("quest", "Going to get 6th badge.")
 		return moveToCell(0, 8)
-	elseif not dialogs.featherDone.state then
-		sys.debug("quest", "Going to talk to NPC.")
-		return talkToNpcOnCell(49, 99)
 	else
 		sys.debug("quest", "Going to get the orbs.")
 		return moveToCell(50, 100)
