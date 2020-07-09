@@ -16,7 +16,9 @@ local description = 'Route 26 to Bark Town'
 local GoToJohtoQuest = Quest:new()
 
 function GoToJohtoQuest:new()
-	return Quest.new(GoToJohtoQuest, name, description, level)
+	local o = Quest.new(GoToJohtoQuest, name, description, level)
+	o.pokemonId = 1
+	return o
 end
 
 function GoToJohtoQuest:isDoable()
@@ -39,7 +41,15 @@ function GoToJohtoQuest:Route26()
 end
 
 function GoToJohtoQuest:Route27()
-	if game.tryTeachMove("Surf","HM03 - Surf") == true then
+	if not game.hasPokemonWithMove("Surf") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM03 - Surf", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Surf")
+		end
+	else
 		if game.inRectangle(63, 8, 217, 24) or game.inRectangle(108, 25, 217, 39) then
 			sys.debug("quest", "Going to Johto.")
 			return moveToCell(74, 14)

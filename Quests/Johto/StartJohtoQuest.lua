@@ -17,6 +17,7 @@ local StartJohtoQuest = Quest:new()
 
 function StartJohtoQuest:new()
 	local o = Quest.new(StartJohtoQuest, name, description, level)
+	o.pokemonId = 1
 	return o
 end
 
@@ -68,9 +69,14 @@ function StartJohtoQuest:ProfessorElmsLab()
 end
 
 function StartJohtoQuest:Route29()
-	if game.tryTeachMove("Surf","HM03 - Surf") == true then -- teach Totodile Surf right away.
-		sys.debug("quest", "Going to Cherrygrove City.")
-		return moveToCell(0, 18)
+	if not game.hasPokemonWithMove("Surf") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM03 - Surf", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Surf")
+		end
 	end
 end
 

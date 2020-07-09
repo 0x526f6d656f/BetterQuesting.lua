@@ -32,6 +32,7 @@ local ThunderBadgeQuest = Quest:new()
 
 function ThunderBadgeQuest:new()
 	o = Quest.new(ThunderBadgeQuest, name, description, level, dialogs)
+	o.pokemonId = 1
 	o.checkedForBestPokemon = false
 	o.puzzle = {}
 	o.firstSwitchFound     = false
@@ -209,7 +210,15 @@ function ThunderBadgeQuest:VermilionCity()
 		return moveToCell(40, 67) -- Enter on SSAnne
 
 	elseif not hasItem("Thunder Badge") then
-		if game.tryTeachMove("Cut", "HM01 - Cut") == true then
+		if not game.hasPokemonWithMove("Cut") then
+			if self.pokemonId < getTeamSize() then
+				useItemOnPokemon("HM01 - Cut", self.pokemonId)
+				log("Pokemon: " .. self.pokemonId .. " Try Learning: HM01 - Cut")
+				self.pokemonId = self.pokemonId + 1
+			else
+				fatal("No pokemon in this team can learn Cut")
+			end
+		else
 			sys.debug("quest", "Going to get 3rd badge.")
 			return moveToCell(26, 51)
 		end

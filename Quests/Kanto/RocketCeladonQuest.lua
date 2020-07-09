@@ -40,6 +40,7 @@ local RocketCeladonQuest = Quest:new()
 
 function RocketCeladonQuest:new()
 	local o =  Quest.new(RocketCeladonQuest, name, description, level, dialogs)
+	o.pokemonId = 1
 	o.TrashBin_Iron = false
 	o.Receptor1check = false
 	o.Receptor2check = false
@@ -183,7 +184,15 @@ function RocketCeladonQuest:UndergroundHouse4()
 end
 
 function RocketCeladonQuest:Route8()
-	if game.tryTeachMove("Cut", "HM01 - Cut") then
+	if not game.hasPokemonWithMove("Cut") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM01 - Cut", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM01 - Cut")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Cut")
+		end
+	else
 		if not self:isTrainingOver() and not self:needPokecenter() then
 			sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
 			return moveToRectangle(38, 11, 42, 15)
@@ -191,8 +200,6 @@ function RocketCeladonQuest:Route8()
 			sys.debug("quest", "Going to heal Pokemon.")
 			return moveToCell(12, 9)
 		end
-	else
-		fatal("Need Pokemon that can learn cut.")
 	end
 end
 

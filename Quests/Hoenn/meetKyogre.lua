@@ -18,7 +18,9 @@ local dive = nil
 local meetKyogre = Quest:new()
 
 function meetKyogre:new()
-	return Quest.new(meetKyogre, name, description, level, dialogs)
+	local o = Quest.new(meetKyogre, name, description, level, dialogs)
+	o.pokemonId = 1
+	return o
 end
 
 function meetKyogre:isDoable()
@@ -64,11 +66,21 @@ function meetKyogre:MossdeepCity()
 		sys.debug("quest", "Going to talk to NPC.")
 		return talkToNpcOnCell(83, 22)
 
+
 	elseif not hasItem("HM06 - Dive") then 
 		sys.debug("quest", "Going to Mossdeep City Space Center to get HM06 - Dive.")
 		return moveToCell(83, 21)
 
-	elseif game.tryTeachMove("Dive", "HM06 - Dive") then
+	elseif not game.hasPokemonWithMove("Dive") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM06 - Dive", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM06 - Dive")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Dive")
+		end
+	
+	else
 		sys.debug("quest", "Going to meet Kyogre.")
 		return moveToCell(31, 55)
 	

@@ -18,6 +18,7 @@ local ToCinnabarQuest = Quest:new()
 
 function ToCinnabarQuest:new()
 	local o = Quest.new(ToCinnabarQuest, name, description, level)
+	o.pokemonId = 1
 	return o
 end
 
@@ -122,7 +123,15 @@ function ToCinnabarQuest:FuchsiaCityStopHouse()
 end
 
 function ToCinnabarQuest:Route19()
-	if game.tryTeachMove("Surf", "HM03 - Surf") then
+	if not game.hasPokemonWithMove("Surf") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM03 - Surf", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Surf")
+		end
+	else
 		sys.debug("quest", "Going to Cinnabar Island.")
 		return moveToCell(0, 44)
 	end

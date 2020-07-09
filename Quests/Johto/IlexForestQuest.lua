@@ -24,6 +24,7 @@ local IlexForestQuest = Quest:new()
 function IlexForestQuest:new()
 	local o = Quest.new(IlexForestQuest, name, description, level, dialogs)
 	o.pokemon = "Caterpie"
+	o.pokemonId = 1
 	o.forceCaught = false
 	return o
 end
@@ -78,10 +79,17 @@ function IlexForestQuest:IlexForest()
 		return moveToRectangle(16, 43, 48, 63)
 
 	else
-		if game.tryTeachMove("Cut","HM01 - Cut") == true then
+		if not game.hasPokemonWithMove("Cut") then
+			if self.pokemonId < getTeamSize() then
+				useItemOnPokemon("HM01 - Cut", self.pokemonId)
+				log("Pokemon: " .. self.pokemonId .. " Try Learning: HM01 - Cut")
+				self.pokemonId = self.pokemonId + 1
+			else
+				fatal("No pokemon in this team can learn Cut")
+			end
+		else
 			sys.debug("quest", "Going to Goldenrod City.")
 			return moveToCell(8, 7)
-
 		end
 	end
 end

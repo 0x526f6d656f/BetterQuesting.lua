@@ -28,7 +28,7 @@ local StormBadgeQuest = Quest:new()
 function StormBadgeQuest:new()
 	o = Quest.new(StormBadgeQuest, name, description, level, dialogs)
 	o.checkedForBestPokemon = false
-
+	o.pokemonId = 1
 	return o
 end
 
@@ -195,11 +195,17 @@ function StormBadgeQuest:GlitterLighthouse5F()
 end
 
 function StormBadgeQuest:Route40()
-	if game.tryTeachMove("Surf", "HM03 - Surf") then
+	if not game.hasPokemonWithMove("Surf") then
+		if self.pokemonId < getTeamSize() then
+			useItemOnPokemon("HM03 - Surf", self.pokemonId)
+			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
+			self.pokemonId = self.pokemonId + 1
+		else
+			fatal("No pokemon in this team can learn Surf")
+		end
+	else
 		sys.debug("quest", "Going to Cianwood City.")
 		return moveToCell(16, 47)
-	else
-		fatal("Tell @Atem on GitHub to fix me: https://github.com/atemerino/BetterQuesting.lua/issues/.")
 	end
 end
 
