@@ -70,13 +70,16 @@ end
 
 function StartJohtoQuest:Route29()
 	if not game.hasPokemonWithMove("Surf") then
-		if self.pokemonId < getTeamSize() then
+		if self.pokemonId <= getTeamSize() then
 			useItemOnPokemon("HM03 - Surf", self.pokemonId)
 			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
 			self.pokemonId = self.pokemonId + 1
 		else
 			fatal("No pokemon in this team can learn Surf")
 		end
+	else
+		sys.debug("quest", "Going to Cherrygrove City.")
+		return moveToCell(0, 18)
 	end
 end
 
