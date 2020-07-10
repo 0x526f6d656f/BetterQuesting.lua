@@ -37,6 +37,7 @@ local Elite4Johto = Quest:new()
 
 function Elite4Johto:new()
 	local o = Quest.new(Elite4Johto, name, description, level, dialogs)
+	o.pokemonId = 1
 	o.checkedForBestPokemon = false
 	o.qnt_revive = 32
 	o.qnt_hyperpot = 32
@@ -110,11 +111,17 @@ function Elite4Johto:BlackthornCity()
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(29, 39)
 	elseif self.checkedForBestPokemon then
-		if game.tryTeachMove("Surf", "HM03 - Surf") then
+		if not game.hasPokemonWithMove("Surf") then
+			if self.pokemonId < getTeamSize() then
+				useItemOnPokemon("HM03 - Surf", self.pokemonId)
+				log("Pokemon: " .. self.pokemonId .. " Try Learning: HM03 - Surf")
+				self.pokemonId = self.pokemonId + 1
+			else
+				fatal("No pokemon in this team can learn Surf")
+			end
+		else
 			sys.debug("quest", "Going to Johto E4.")
 			return moveToCell(20, 50)
-		else
-			fatal("Tell @Atem on GitHub to fix me.")
 		end
 	end
 end
