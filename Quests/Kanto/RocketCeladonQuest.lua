@@ -1,5 +1,6 @@
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local team   = require "Libs/teamlib"
 local Quest  = require "Quests/Quest"
 local pc = require "Libs/pclib"
 local Dialog = require "Quests/Dialog"
@@ -41,6 +42,7 @@ local RocketCeladonQuest = Quest:new()
 function RocketCeladonQuest:new()
 	local o =  Quest.new(RocketCeladonQuest, name, description, level, dialogs)
 	o.pokemonId = 1
+	o.needCutPokemonFromBoxes = false
 	o.TrashBin_Iron = false
 	o.Receptor1check = false
 	o.Receptor2check = false
@@ -79,7 +81,7 @@ function RocketCeladonQuest:isDone()
 end
 
 function RocketCeladonQuest:CeladonCity()
-	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Celadon" then
+	if self:needPokecenter() or not game.isTeamFullyHealed() or self.registeredPokecenter ~= "Pokecenter Celadon" or self.needCutPokemonFromBoxes then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(52, 19)
 
@@ -110,7 +112,29 @@ function RocketCeladonQuest:CeladonCity()
 end
 
 function RocketCeladonQuest:PokecenterCeladon()
-	if not self.checkedForBestPokemon then
+	if self.needCutPokemonFromBoxes then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					if pc.getCutPokemonFromCurrentBoxFromRegion("Kanto") ~= nil then
+						log(string.format("Swapping worst team Pokemon \"%s\" with Cut Pokemon from Box %i \"%s\".", getPokemonName(team.getWorstPokemonInTeam()), getCurrentPCBoxId(), getPokemonNameFromPC(getCurrentPCBoxId(), pc.getCutPokemonFromCurrentBoxFromRegion("Kanto"))))
+						if swapPokemonFromPC(getCurrentPCBoxId(), pc.getCutPokemonFromCurrentBoxFromRegion("Kanto"), team.getWorstPokemonInTeam()) then	
+							self.needCutPokemonFromBoxes = false
+						end
+					else
+						return openPCBox(getCurrentPCBoxId() + 1)
+					end
+				else
+					fatal("AAAAAAAAAAAAAAAAAAA")
+				end
+			end
+		else
+			return usePC()
+		end
+
+	elseif not self.checkedForBestPokemon then
 		if isPCOpen() then
 			if isCurrentPCBoxRefreshed() then
 				if getCurrentPCBoxSize() ~= 0 then
@@ -141,7 +165,10 @@ function RocketCeladonQuest:PokecenterCeladon()
 end
 
 function RocketCeladonQuest:Route7()
-	if not self.registeredPokecenter == "Pokecenter Celadon" then
+	if self.needCutPokemonFromBoxes then
+		sys.debug("quest", "Going to get a Pokemon that can learn Cut from Boxes.")
+		return moveToCell(0, 25)
+	elseif not self.registeredPokecenter == "Pokecenter Celadon" then
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(0, 23)
 	elseif not self:isTrainingOver() and not self:needPokecenter() then
@@ -154,7 +181,10 @@ function RocketCeladonQuest:Route7()
 end
 
 function RocketCeladonQuest:UndergroundHouse3()
-	if not self:isTrainingOver() and not self:needPokecenter() then
+	if self.needCutPokemonFromBoxes then
+		sys.debug("quest", "Going to get a Pokemon that can learn Cut from Boxes.")
+		return moveToCell(5, 10)
+	elseif not self:isTrainingOver() and not self:needPokecenter() then
 		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
 		return moveToCell(9, 3)
 	else
@@ -164,7 +194,10 @@ function RocketCeladonQuest:UndergroundHouse3()
 end
 
 function RocketCeladonQuest:Underground1()
-	if not self:isTrainingOver() and not self:needPokecenter() then
+	if self.needCutPokemonFromBoxes then
+		sys.debug("quest", "Going to get a Pokemon that can learn Cut from Boxes.")
+		return moveToCell(1, 5)
+	elseif not self:isTrainingOver() and not self:needPokecenter() then
 		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
 		return moveToCell(69, 5)
 	else
@@ -174,7 +207,10 @@ function RocketCeladonQuest:Underground1()
 end
 
 function RocketCeladonQuest:UndergroundHouse4()
-	if not self:isTrainingOver() and not self:needPokecenter() then
+	if self.needCutPokemonFromBoxes then
+		sys.debug("quest", "Going to get a Pokemon that can learn Cut from Boxes.")
+		return moveToCell(1, 3)
+	elseif not self:isTrainingOver() and not self:needPokecenter() then
 		sys.debug("quest", "Going to train Pokemon until Level " .. self.level .. ".")
 		return moveToCell(4, 10)
 	else
@@ -185,12 +221,15 @@ end
 
 function RocketCeladonQuest:Route8()
 	if not game.hasPokemonWithMove("Cut") then
-		if self.pokemonId < getTeamSize() then
+		if self.pokemonId <= getTeamSize() then
 			useItemOnPokemon("HM01 - Cut", self.pokemonId)
 			log("Pokemon: " .. self.pokemonId .. " Try Learning: HM01 - Cut")
 			self.pokemonId = self.pokemonId + 1
 		else
-			fatal("No pokemon in this team can learn Cut")
+			self.needCutPokemonFromBoxes = true
+			self.pokemonId = 1
+			sys.debug("quest", "Going to get a Pokemon that can learn Cut from Boxes.")
+			return moveToCell(12, 9)
 		end
 	else
 		if not self:isTrainingOver() and not self:needPokecenter() then

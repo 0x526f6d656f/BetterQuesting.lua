@@ -471,6 +471,7 @@ function Quest:checkDiscoverables()
 		"Oaks Lab",
 		"Olivine City",
 		"Sprout Tower F1", -- Ghastly sucks for leveling
+		"Tohjo Falls", -- else we will end up with 2x Crobat at the end
 	}
 
 	for i, discoverablePokemon in ipairs(getDiscoverableAbandonedPokemon()) do
@@ -555,14 +556,25 @@ function Quest:checkNPCInteractions()
 	end
 end
 
+function Quest:checkForDeadPokemonBug()
+	if getTeamSize() > 1 and getUsablePokemonCount() == 0 then
+		if hasItem("Revive") then
+			useItemOnPokemon("Revive", 1)
+		else
+			fatal("All pokemon are dead, likely to a bug and you have no revives.")
+		end
+	end
+	return false
+end
+
 function Quest:path()
+	if self:checkForDeadPokemonBug() then   return true end
 	if self:evolvePokemon() then 			return true end
 	if self:sortInMemory() then 			return true end
 	if self:leftovers() then 				return true end
 	if self:checkNPCInteractions() then		return true end
 	if self:checkDiscoverables() then		return true	end
 	if self:fightTrainersOnMap() then		return true end
-
 
 
 

@@ -10,6 +10,7 @@ local Pokemon = require("Classes/Pokemon")
 local Set = require("Classes/Set")
 local luaPokemonData = require("Data/luaPokemonData")
 local cutTargets = require("Data/cutTargets")
+local surfTargets = require("Data/surfTargets")
 
 local pc = {}
 
@@ -425,6 +426,26 @@ function pc.getBestPokemonIdFromCurrentBoxFromRegion(region)
 	end
 	
 	return bestPokemonInBox
+end
+
+function pc.getCutPokemonFromCurrentBoxFromRegion(region)
+    local cutPokemon = nil
+
+    for i = 1, getCurrentPCBoxSize() do
+        if sys.tableHasValue(cutTargets, getPokemonNameFromPC(getCurrentPCBoxId(), i)) then
+            if getPokemonRegionFromPC(getCurrentPCBoxId(), i) == region then
+                cutPokemon = i
+            end
+        end
+    end
+
+    return cutPokemon
+end
+
+function pc.getSurfPokemonFromCurrentBoxFromRegion(region)
+end
+
+function pc.getRockSmashPokemonFromCurrentBoxFromRegion(region)
 end
 
 return pc

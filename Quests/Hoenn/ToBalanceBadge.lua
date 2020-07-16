@@ -279,6 +279,7 @@ function ToBalanceBadge:PetalburgCity()
 		if self.relogged then
 			return talkToNpcOnCell(19, 12)
 		else
+			self.relogged = true
 			return relog(60, "Can't talk to NPC - relogging...")
 		end
 	else

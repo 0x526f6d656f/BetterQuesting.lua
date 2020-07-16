@@ -7,6 +7,7 @@
 
 local sys    = require "Libs/syslib"
 local game   = require "Libs/gamelib"
+local team   = require "Libs/teamlib"
 local pc	 = require "Libs/pclib"
 local Quest  = require "Quests/Quest"
 
@@ -21,6 +22,7 @@ local ToLavaridgeTown = Quest:new()
 function ToLavaridgeTown:new()
 	local o = Quest.new(ToLavaridgeTown, name, description, level, dialogs)
 	o.checkedForBestPokemon = false
+	o.needsRockSmashPokemon = false
 	return o
 end
 
@@ -185,22 +187,69 @@ function ToLavaridgeTown:Route115()
 end
 
 function ToLavaridgeTown:RustboroCity()
-	sys.debug("quest", "Going to Lavaridge Town.")
-	return moveToCell(78, 8)
+	if self.needsRockSmashPokemon then
+		sys.debug("quest", "Going to fetch a Pokemon with Rock Smash.")
+		return moveToCell(38, 38)
+	else
+		sys.debug("quest", "Going to Lavaridge Town.")
+		return moveToCell(78, 8)
+	end
 end
 
 function ToLavaridgeTown:Route116()
-	sys.debug("quest", "Going to Lavaridge Town.")
-	return moveToCell(62, 19)
+	if self.needsRockSmashPokemon then
+		sys.debug("quest", "Going to fetch a Pokemon with Rock Smash.")
+		return moveToCell(0, 23)
+	else
+		sys.debug("quest", "Going to Lavaridge Town.")
+		return moveToCell(62, 19)
+	end
 end
 
 function ToLavaridgeTown:RusturfTunnel()
-	if isNpcOnCell(25, 9) then
-		sys.debug("quest", "Going to talk to NPC.")
-		return talkToNpcOnCell(25, 9)
+	if game.hasPokemonWithMove("Rock Smash") then
+		if isNpcOnCell(25, 9) then
+			sys.debug("quest", "Going to talk to NPC.")
+			return talkToNpcOnCell(25, 9)
+		else
+			sys.debug("quest", "Going to Lavaridge Town.")
+			return moveToCell(35, 26)
+		end
 	else
-		sys.debug("quest", "Going to Lavaridge Town.")
-		return moveToCell(35, 26)
+		self.needsRockSmashPokemon = true
+		sys.debug("quest", "Going to fetch a Pokemon with Rock Smash.")
+		return moveToCell(11, 19)
+	end
+end
+
+function ToLavaridgeTown:PokecenterRustboroCity()
+	if self.needsRockSmashPokemon then
+		if isPCOpen() then
+			if isCurrentPCBoxRefreshed() then
+				if getCurrentPCBoxSize() ~= 0 then
+					log("Current Box: " .. getCurrentPCBoxId())
+					log("Box Size: " .. getCurrentPCBoxSize())
+					for i = 1, getCurrentPCBoxSize() do
+						for boxMoveId = 1, 4 do
+							if getPokemonMoveNameFromPC(getCurrentPCBoxId(), i, boxMoveId) == "Rock Smash" then
+								if swapPokemonFromPC(getCurrentPCBoxId(), i, team.getWorstPokemonInTeam()) then
+									self.needsRockSmashPokemon = false
+								end
+							end
+						end
+					end
+					if self.needsRockSmashPokemon then
+						return openPCBox(getCurrentPCBoxId() + 1)
+					end
+				else
+					sys.debug("AAAAAAAAAAAA")
+				end
+			end
+		else
+			return usePC()
+		end
+	else
+		return moveToCell(8, 22)
 	end
 end
 

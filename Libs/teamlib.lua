@@ -8,6 +8,7 @@
 
 local gen = require("Libs/genlib")
 local game = require ("Libs/gamelib")
+local luaPokemonData = require("Data/luaPokemonData")
 
 --|x, y| x + y is shorthand for function(x,y) return x+y end.
 team = {}
@@ -285,6 +286,18 @@ function team._transform(t, fn)
         table.insert(transTbl, value, fn(value))
     end
     return transTbl
+end
+
+function team.getWorstPokemonInTeam()
+    local worstPokemonId = 1 --assume first pokemon in team is worst
+
+    for i = 1, getTeamSize() do
+        if luaPokemonData[getPokemonName(i)]["TotalStats"] < luaPokemonData[getPokemonName(worstPokemonId)]["TotalStats"] then
+            worstPokemonId = i
+        end
+    end
+
+    return worstPokemonId
 end
 
 return team
