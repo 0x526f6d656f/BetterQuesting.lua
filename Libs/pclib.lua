@@ -409,18 +409,18 @@ function pc.getBestPokemonIdFromCurrentBoxFromRegion(region)
 	
 	for i = 1, getCurrentPCBoxSize() do
         if getPokemonRegionFromPC(getCurrentPCBoxId(), i) == region then
-            if bestPokemonInBox == nil then
-                bestPokemonInBox = i -- if this is the first pokemon matching with region, we cannot compare, so set it bestPokemonInBox
-            else
-		        if luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), i)]["TotalStats"] > luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), bestPokemonInBox)]["TotalStats"] then
-                    for moveId = 1, 4 do
-                        if getPokemonMoveNameFromPC(getCurrentPCBoxId(), i, moveId) then
-                            if getPokemonMovePowerFromPC(getCurrentPCBoxId(), i, moveId) > 0 then -- prevent picking a strong pokemon without a damage dealing move, like Haunter
-		        	            bestPokemonInBox = i
+            for moveId = 1, 4 do
+                if getPokemonMoveNameFromPC(getCurrentPCBoxId(), i, moveId) then
+                    if getPokemonMovePowerFromPC(getCurrentPCBoxId(), i, moveId) > 0 then -- prevent picking a strong pokemon without a damage dealing move, like Haunter
+                        if bestPokemonInBox == nil then
+                            bestPokemonInBox = i -- if this is the first pokemon matching with region, we cannot compare, so set it bestPokemonInBox
+                        else
+                            if luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), i)]["TotalStats"] > luaPokemonData[getPokemonNameFromPC(getCurrentPCBoxId(), bestPokemonInBox)]["TotalStats"] then
+		            	        bestPokemonInBox = i
                             end
                         end
-                    end
-		        end
+		            end
+                end
             end
         end
 	end

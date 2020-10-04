@@ -568,6 +568,10 @@ function Quest:checkForDeadPokemonBug()
 end
 
 function Quest:path()
+	if self.forceRelog then
+		self.forceRelog = false
+		return relog(60, "Relogging.")
+	end
 	if self:checkForDeadPokemonBug() then   return true end
 	if self:evolvePokemon() then 			return true end
 	if self:sortInMemory() then 			return true end
@@ -762,6 +766,9 @@ function Quest:battleMessage(message)
 end
 
 function Quest:systemMessage(message)
+	if sys.stringContains(message, "No XP gained. Try battling a higher level.") then	
+		self.forceRelog = true
+	end
 	return false
 end
 
