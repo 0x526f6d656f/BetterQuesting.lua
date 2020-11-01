@@ -57,7 +57,7 @@ function RocketCeladonQuest:new()
 	o.b4f_ReceptorDone = false
 	o.b3f_ReceptorDone = false
 
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	return o
 end
 

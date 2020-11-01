@@ -27,7 +27,7 @@ local StormBadgeQuest = Quest:new()
 
 function StormBadgeQuest:new()
 	o = Quest.new(StormBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.pokemonId = 1
 	return o
 end

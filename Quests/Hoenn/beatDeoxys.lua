@@ -29,7 +29,7 @@ local beatDeoxys = Quest:new()
 
 function beatDeoxys:new()
 	local o = Quest.new(beatDeoxys, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.deoxysBeaten = false
 	o.relogged = false
 	return o

@@ -27,7 +27,7 @@ local ExpForElite4Kanto = Quest:new()
 
 function ExpForElite4Kanto:new()
 	local o = Quest.new(ExpForElite4Kanto, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.qnt_revive = 32
 	o.qnt_hyperpot = 32
 	return o

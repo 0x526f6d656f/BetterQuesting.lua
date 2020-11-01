@@ -13,7 +13,7 @@ local RockTunnelQuest = Quest:new()
 
 function RockTunnelQuest:new()
 	local o = Quest.new(RockTunnelQuest, name, description, level)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 
 	return o
 end

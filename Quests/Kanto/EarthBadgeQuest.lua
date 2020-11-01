@@ -20,7 +20,7 @@ local EarthBadgeQuest = Quest:new()
 
 function EarthBadgeQuest:new()
 	local o = Quest.new(EarthBadgeQuest, name, description, level)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	return o
 end
 

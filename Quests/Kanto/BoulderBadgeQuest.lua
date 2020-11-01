@@ -18,7 +18,7 @@ local level = 14
 local BoulderBadgeQuest = Quest:new()
 function BoulderBadgeQuest:new()
 	local o = Quest.new(BoulderBadgeQuest, name, description, level)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.checkedViridianMazePokeball = false
 	return o
 end

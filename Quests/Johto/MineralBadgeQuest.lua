@@ -29,7 +29,7 @@ local MineralBadgeQuest = Quest:new()
 
 function MineralBadgeQuest:new()
 	local o = Quest.new(MineralBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	
 	return o
 end

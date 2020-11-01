@@ -1,4 +1,4 @@
--- Copyright © 2016 g0ld <g0ld@tuta.io>
+-- Copyright ï¿½ 2016 g0ld <g0ld@tuta.io>
 -- This work is free. You can redistribute it and/or modify it under the
 -- terms of the Do What The Fuck You Want To Public License, Version 2,
 -- as published by Sam Hocevar. See the COPYING file for more details.
@@ -20,7 +20,7 @@ local GetTheOrbs = Quest:new()
 
 function GetTheOrbs:new()
 	local o = Quest.new(GetTheOrbs, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	return o
 end
 

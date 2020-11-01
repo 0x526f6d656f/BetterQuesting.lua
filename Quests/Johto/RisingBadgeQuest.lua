@@ -21,7 +21,7 @@ local RisingBadgeQuest = Quest:new()
 
 function RisingBadgeQuest:new()
 	local o = Quest.new(RisingBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 
 	return o
 end
@@ -170,7 +170,7 @@ end
 
 function RisingBadgeQuest:DragonsDen()
 	if self:needPokecenter() or self:isTrainingOver() then 
-		self.checkedForBestPokemon = false
+		self.checkedForBestPokemon = true
 		sys.debug("quest", "Going to heal Pokemon.")
 		return moveToCell(40, 16)
 	else
