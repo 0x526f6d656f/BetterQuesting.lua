@@ -26,7 +26,7 @@ local CascadeBadgeQuest = Quest:new()
 
 function CascadeBadgeQuest:new()
 	local o = Quest.new(CascadeBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	return o
 end
 

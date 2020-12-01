@@ -22,7 +22,7 @@ local VolcanoBadgeQuest = Quest:new()
 
 function VolcanoBadgeQuest:new()
 	local o = Quest.new(VolcanoBadgeQuest, name, description, level)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.relogged = false
 	return o
 end

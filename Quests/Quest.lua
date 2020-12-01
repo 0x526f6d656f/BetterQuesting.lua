@@ -608,7 +608,7 @@ function Quest:battle()
 	if isWildBattle() 													--if it's a wild battle:
 		and (isOpponentShiny() 											--catch special pkm
 			or isEventPkm
-			or ((isAlreadyCaught() == false and self:isPokemonBlacklisted(getOpponentName()) == false and getOpponentLevel() >= 5))
+			or ((isAlreadyCaught() == false and self:isPokemonBlacklisted(getOpponentName()) == false and getOpponentLevel() >= 5 and getTeamSize() < 6))
 			or (self.pokemon 											--catch quest related pkm
 				and getOpponentName() == self.pokemon
 				and self.forceCaught ~= nil

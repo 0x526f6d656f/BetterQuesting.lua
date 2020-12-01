@@ -38,7 +38,7 @@ local dialogs = {
 
 local e4HoennQuest = Quest:new()
 
-local checkedForBestPokemon = false
+local checkedForBestPokemon = true
 
 function e4HoennQuest:new()
 	local o = Quest.new(e4HoennQuest, name, description, level, dialogs)

@@ -38,7 +38,7 @@ local Elite4Johto = Quest:new()
 function Elite4Johto:new()
 	local o = Quest.new(Elite4Johto, name, description, level, dialogs)
 	o.pokemonId = 1
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.qnt_revive = 32
 	o.qnt_hyperpot = 32
 	return o

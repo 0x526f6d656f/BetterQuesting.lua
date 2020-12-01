@@ -23,7 +23,7 @@ local SoulBadgeQuest = Quest:new()
 
 function SoulBadgeQuest:new()
 	local o = Quest.new(SoulBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.pokemonId = 1
 	return o
 end

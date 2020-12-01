@@ -29,7 +29,7 @@ local FogBadgeQuest = Quest:new()
 
 function FogBadgeQuest:new()
 	local o = Quest.new(FogBadgeQuest, name, description, level, dialogs)
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	return o
 end
 

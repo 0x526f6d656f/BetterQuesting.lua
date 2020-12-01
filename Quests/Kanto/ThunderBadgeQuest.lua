@@ -33,7 +33,7 @@ local ThunderBadgeQuest = Quest:new()
 function ThunderBadgeQuest:new()
 	o = Quest.new(ThunderBadgeQuest, name, description, level, dialogs)
 	o.pokemonId = 1
-	o.checkedForBestPokemon = false
+	o.checkedForBestPokemon = true
 	o.puzzle = {}
 	o.firstSwitchFound     = false
 	o.firstSwitchActivated = false
